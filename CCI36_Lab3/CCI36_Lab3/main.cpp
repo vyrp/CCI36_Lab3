@@ -16,12 +16,14 @@
 #include <string.h>
 #include <math.h>
 #include <list>
+#include <vector>
 #include <algorithm>
 
 static LRESULT CALLBACK WinProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 
 #define Max(x, y) ((x) > (y) ? (x) : (y))
 #define Arred(x) ((int)((x) + 0.5))   // only for x>=0
+#define sqr(x) ((x)*(x))
 
 #define PI 3.1415926535897932384626433832795
 #define ENTER 13
@@ -648,45 +650,106 @@ class Entity
 {
 protected:
 	my_color color;
+
 public:
 	Entity()
 	{
+		SetUnactive();
+	}
+
+	void SetActive()
+	{
+		color = MY_RED;
+	}
+
+	void SetUnactive()
+	{
 		color = MY_WHITE;
 	}
+
 	virtual bool Pick(float x, float y, float d) = 0;
-	virtual bool Draw() = 0;
+	virtual void Draw() = 0;
 };
 
-class Line : public Entity
+class Segment : public Entity
 {
 protected:
 	float x1, y1, x2, y2;
-public:
-	Line(float x1, float y1, float x2, float y2) : x1(x1), y1(y1), x2(x2), y2(y2) { }
 
-	virtual bool Pick(float x, float y, float d)
+public:
+	Segment(float x1, float y1, float x2, float y2) : x1(x1), y1(y1), x2(x2), y2(y2) { }
+
+	virtual bool Pick(float x, float y, float d) // World coordinates
 	{
-		float dist2, xmin, ymin, xmax, ymax;
-		xmin = min(x1, x2);
-		ymin = min(y1, y2);
-		xmax = max(x1, x2);
-		ymax = max(y1, y2);
-		dist2 = sqrt((x - x1)*(y2 - y1) - (y - y1)*(x2 - x1)) / (sqrt(x2 - x1) + sqrt(y2 - y1));
+		float xmin = min(x1, x2);
+		float ymin = min(y1, y2);
+		float xmax = max(x1, x2);
+		float ymax = max(y1, y2);
+		float dist2 = sqr((x - x1)*(y2 - y1) - (y - y1)*(x2 - x1)) / (sqr(x2 - x1) + sqr(y2 - y1));
 		return (dist2 <= d*d) && ((xmin - d <= x) && (x <= xmax + d) && (ymin - d <= y) && (y <= ymax + d));
 	}
 
-	virtual bool Draw()
+	virtual void Draw()
 	{
 		// TODO
 	}
 };
 
-class Polygon : public Entity {
+class Polygon : public Entity
+{
+protected:
+	std::vector<Segment> edges;
 
+public:
+	Polygon(float_polygon_type polygon)
+	{
+		for (int i = 0; i < polygon.n - 1; i++)
+		{
+			edges.push_back(Segment(polygon.vertex[i].x, polygon.vertex[i].y, polygon.vertex[i+1].x, polygon.vertex[i+1].y));
+		}
+	}
+
+	virtual bool Pick(float x, float y, float d) // World coordinates
+	{
+		for (int i = 0; i < edges.size(); i++)
+		{
+			if (edges[i].Pick(x, y, d))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	virtual void Draw()
+	{
+		for (int i = 0; i < edges.size(); i++)
+		{
+			edges[i].Draw();
+		}
+	}
 };
 
-class Circle : public Entity {
+class Circle : public Entity
+{
+protected:
+	float x0, y0, r;
+public:
+	Circle(float x0, float y0, float r) : x0(x0), y0(y0), r(r) { }
 
+	virtual bool Pick(float x, float y, float d) // World coordinates
+	{
+		float dist2 = sqr(x - x0) + sqr(y - y0);
+		if (r - d <= 0)
+			return dist2 <= sqr(d + r);
+		else
+			return sqr(r - d) <= dist2 && dist2 <= sqr(d + r);
+	}
+
+	virtual void Draw()
+	{
+		// TODO
+	}
 };
 
 std::list<Entity*> entities;
