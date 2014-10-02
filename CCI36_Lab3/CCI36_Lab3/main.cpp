@@ -15,7 +15,10 @@
 #include <windows.h>
 #include <string.h>
 #include <math.h>
+#include <list>
 #include <algorithm>
+
+using std::list;
 
 static LRESULT CALLBACK WinProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 
@@ -747,6 +750,19 @@ enum Shape { Line, Circle };
 
 ///////////////////////////////////////////////////////////////////////// Croata
 
+class Entity {
+private:
+	my_color color;
+public:
+	Entity()
+	{
+		color = MY_WHITE;
+	}
+	virtual bool Pick(int x, int y) = 0;
+	virtual bool Draw() = 0;
+};
+
+list<Entity*> entities;
 
 ///////////////////////////////////////////////////////////////////////// Harry
 
