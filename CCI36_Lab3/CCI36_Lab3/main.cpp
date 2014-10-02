@@ -640,8 +640,6 @@ void DrawCircle(int xc, int yc, int r)
 	}
 }
 
-enum Shape { Line, Circle };
-
 ///////////////////////////////////////////////////////////////////////// Harry
 
 float x_start, x_end, y_start, y_end, heigth, width; /* screem bitmap size */
@@ -952,6 +950,44 @@ void DrawPolygon(float_polygon_type poly)
 	}
 }
 
+void DrawEllipse(float x0, float y0, float rx, float ry) // World coordinates
+{
+	int rix, riy, xi0, yi0;
+	ViewingTransformation(&x0, &y0);
+	ViewingTransformation(&rx, &ry);
+	NormalizedToDevice(x0, y0, &xi0, &yi0);
+	NormalizedToDevice(rx, ry, &rix, &riy);
+
+	int x1, y1, x2, y2;
+	if (rix > 0)
+	{
+		x1 = xi0 - rix;
+		x2 = xi0 + rix;
+	}
+	else if (rix == 0) // make the ellipse 2 pixels wide (a line)
+	{
+		x1 = xi0;
+		x2 = xi0 + 1;
+	}
+	else return; // wrong radius
+
+	if (riy > 0)
+	{
+		y1 = yi0 - riy;
+		y2 = yi0 + riy;
+	}
+	else if (riy == 0) // make the ellipse 2 pixels wide (a line)
+	{
+		y1 = yi0;
+		y2 = yi0 + 1;
+	}
+	else return;
+
+	HBRUSH brush = (HBRUSH)GetStockObject(NULL_BRUSH);
+	SelectObject(hdc, brush);
+	Ellipse(hdc, x1, y1, x2, y2);  // Draw ellipse
+}
+
 ///////////////////////////////////////////////////////////////////////// Croata
 
 class Entity
@@ -1056,41 +1092,7 @@ public:
 
 	virtual void Draw()
 	{
-		float rx = r, ry = r, x0 = this->x0, y0 = this->y0;
-		int rix, riy, xi0, yi0;
-		ViewingTransformation(&x0, &y0);
-		ViewingTransformation(&rx, &ry);
-		NormalizedToDevice(x0, y0, &xi0, &yi0);
-		NormalizedToDevice(rx, ry, &rix, &riy);
-		
-		int x1, y1, x2, y2;
-		if (rix > 0)
-		{
-			x1 = xi0 - rix;
-			x2 = xi0 + rix;
-		}
-		else if (rix == 0) // make the ellipse 2 pixels wide (a line)
-		{
-			x1 = xi0;
-			x2 = xi0 + 1;
-		}
-		else return; // wrong radius
-
-		if (riy > 0)
-		{
-			y1 = yi0 - riy;
-			y2 = yi0 + riy;
-		}
-		else if (riy == 0) // make the ellipse 2 pixels wide (a line)
-		{
-			y1 = yi0;
-			y2 = yi0 + 1;
-		}
-		else return;
-
-		HBRUSH brush = (HBRUSH)GetStockObject(NULL_BRUSH);
-		SelectObject(hdc, brush);
-		Ellipse(hdc, x1, y1, x2, y2);  // Draw ellipse
+		DrawEllipse(r, r, x0, y0);
 	}
 };
 
@@ -1098,12 +1100,12 @@ std::list<Entity*> entities;
 
 /////////////////////////////////////////////////////////////////////////
 
-
-
-
+enum Action { Draw, Pick, Zoom };
+enum Shape { Line, Circle, Poly };
 
 void main()
 {
+		Action action = Draw;
 		Shape shape = Line;
 		SetGraphicsColor(color, 1);
 
