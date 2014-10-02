@@ -1060,6 +1060,9 @@ void DrawCircle(int xc, int yc, int r)
 
 enum Shape { Line, Circle };
 
+#include "Croata.h"
+#include "Harry.h"
+
 void main()
 {
 	Shape shape = Line;
