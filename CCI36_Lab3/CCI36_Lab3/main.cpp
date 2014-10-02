@@ -1126,7 +1126,7 @@ public:
 
 	virtual bool Pick(float x, float y, float d) // World coordinates
 	{
-		for (int i = 0; i < edges.size(); i++)
+		for (size_t i = 0; i < edges.size(); i++)
 		{
 			if (edges[i].Pick(x, y, d))
 			{
@@ -1168,27 +1168,27 @@ public:
 		NormalizedToDevice(rx, ry, &rix, &riy);
 		
 		int x1, y1, x2, y2;
-		if (rx > 0)
+		if (rix > 0)
 		{
-			x1 = x0 - rx;
-			x2 = x0 + rx;
+			x1 = xi0 - rix;
+			x2 = xi0 + rix;
 		}
-		else if (rx == 0) // make the ellipse 2 pixels wide (a line)
+		else if (rix == 0) // make the ellipse 2 pixels wide (a line)
 		{
-			x1 = x0;
-			x2 = x0 + 1;
+			x1 = xi0;
+			x2 = xi0 + 1;
 		}
 		else return; // wrong radius
 
-		if (ry > 0)
+		if (riy > 0)
 		{
-			y1 = y0 - ry;
-			y2 = y0 + ry;
+			y1 = yi0 - riy;
+			y2 = yi0 + riy;
 		}
-		else if (ry == 0) // make the ellipse 2 pixels wide (a line)
+		else if (riy == 0) // make the ellipse 2 pixels wide (a line)
 		{
-			y1 = y0;
-			y2 = y0 + 1;
+			y1 = yi0;
+			y2 = yi0 + 1;
 		}
 		else return;
 
