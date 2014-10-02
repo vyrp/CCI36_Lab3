@@ -33,9 +33,6 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPa
 #define R_MOUSE_DOWN 2
 #define L_DOUBLE_CLICK 3
 #define L_MOUSE_UP 4
-#define LINE_SCAN 0
-#define FLOOD_FILL_RECURSIVE 1
-#define FLOOD_FILL 2
 
 #define CONSOLE_SIZE_X 640				// initial input line size in pixel
 #define START_TEXT_X 5					// input line box initial position X
@@ -49,52 +46,9 @@ int key_input = NO_ACTION, mouse_action = NO_ACTION;
 int mouse_x, mouse_y;
 static BOOL graphics = TRUE;            // Boolean, enable graphics?
 
-const int pattern_max = 5;
-char pattern[pattern_max][6][7] = {
-		{
-			"rrorrr",
-			"rrorrr",
-			"oooooo",
-			"rrorrr",
-			"rrorrr",
-			"oooooo"
-		}, {
-			"bbbbbb",
-			"rrrrrr",
-			"wwwwww",
-			"mmmmmm",
-			"oooooo",
-			"wwwwww"
-		}, {
-			"rwwwwr",
-			"rrwwrr",
-			"rrwwrr",
-			"rwwwwr",
-			"wwwwww",
-			"wwwwww"
-		}, {
-			"bbbbbb",
-			"bbbbbb",
-			"brrbrr",
-			"brrrrr",
-			"bbrrrb",
-			"bbbrbb"
-		}, {
-			"wwwrww",
-			"wrwwwr",
-			"wwwrww",
-			"wrwwwr",
-			"wwwrww",
-			"wrwwwr"
-		}
-};
-
-int current_pattern; // chosen pattern from the list above (if pattern_max then it is no pattern)
-
 bool xor = false;
 
 char buffer[200] = "";					// string buffer for keyboard input
-int algorithmType = LINE_SCAN;
 
 int menu_item;
 
@@ -166,43 +120,11 @@ const unsigned int Mask = 0x00FFFFFF;
 *  Given the position (x,y) of the pixel, this function sets the color to
 *  be used, taking into consideration the current pattern.
 ****************************************************************************/
-void SetPatternColor(int x, int y) {
-	x /= 8; // scale
-	y /= 8; // scale
-	int i = y % 6;
-	int j = x % 6;
-	switch (pattern[current_pattern][i][j]){
-	case 'r':
-		SetGraphicsColor(MY_RED, 1);
-		break;
-	case 'o':
-		SetGraphicsColor(MY_LIGHTRED, 1);
-		break;
-	case 'b':
-		SetGraphicsColor(MY_BLUE, 1);
-		break;
-	case 'g':
-		SetGraphicsColor(MY_GREEN, 1);
-		break;
-	case 'w':
-		SetGraphicsColor(MY_WHITE, 1);
-		break;
-	case 'm':
-		SetGraphicsColor(MY_MAGENTA, 1);
-		break;
-	}
-}
 
-void DrawPixel(int x, int y, bool with_pattern)
+void DrawPixel(int x, int y)
 {
-	if (!with_pattern || pattern[current_pattern][x % 6][y % 6] != '0')
-	{
-		if (with_pattern) {
-			SetPatternColor(x, y);
-		}
-		SetPixel(hdc, x, y, xor ? GetPixel(hdc, x, y) ^ Mask : win_draw_color);
-		SetGraphicsColor(color, 1);
-	}
+	SetPixel(hdc, x, y, xor ? GetPixel(hdc, x, y) ^ Mask : win_draw_color);
+	SetGraphicsColor(color, 1);
 }
 
 /****************************************************************************
@@ -227,9 +149,6 @@ void MenuBar()
 	menu = CreateMenu();
 	menu_draw = CreatePopupMenu();
 	//menu_color = CreatePopupMenu();
-	//menu_pattern = CreatePopupMenu();
-	//menu_algorithm = CreatePopupMenu();
-
 
 	AppendMenu(
 		menu,					// handle to menu to be changed
@@ -238,22 +157,10 @@ void MenuBar()
 		(LPCTSTR)L"&Draw"		// menu-item content
 		);
 
-	/*AppendMenu(
-		menu,					// handle to menu to be changed
-		MF_POPUP,				// menu-item flags
-		(UINT)menu_pattern,		// menu-item identifier or handle to drop-down menu or submenu
-		(LPCTSTR)L"&Pattern"	// menu-item content
-		);
+	
+		//AppendMenu(menu, MF_POPUP, (UINT)menu_color, (LPCTSTR)L"&Color");
 
-		AppendMenu(menu, MF_POPUP, (UINT)menu_color, (LPCTSTR)L"&Color");
-
-		AppendMenu(
-		menu,					// handle to menu to be changed
-		MF_POPUP,				// menu-item flags
-		(UINT)menu_algorithm,	// menu-item identifier or handle to drop-down menu or submenu
-		(LPCTSTR)L"&Algorithm"	// menu-item content
-		);*/
-
+		
 	InsertMenu(menu_draw, 0, MF_STRING, 21, (LPCTSTR)L"&Polygon");
 
 	AppendMenu(menu_draw, MF_STRING, 22, (LPCTSTR)L"&Circle");
@@ -275,18 +182,7 @@ void MenuBar()
 	AppendMenu(menu_color, MF_STRING, 13, (LPCTSTR)L"LightRed");
 	AppendMenu(menu_color, MF_STRING, 14, (LPCTSTR)L"LightMagenta");
 	AppendMenu(menu_color, MF_STRING, 15, (LPCTSTR)L"Yellow");
-	AppendMenu(menu_color, MF_STRING, 16, (LPCTSTR)L"White");
-
-	InsertMenu(menu_pattern, 0, MF_STRING, 100, (LPCTSTR)L"Bricks");
-	AppendMenu(menu_pattern, MF_STRING, 101, (LPCTSTR)L"Rainbow");
-	AppendMenu(menu_pattern, MF_STRING, 102, (LPCTSTR)L"Crosses");
-	AppendMenu(menu_pattern, MF_STRING, 103, (LPCTSTR)L"Heart");
-	AppendMenu(menu_pattern, MF_STRING, 104, (LPCTSTR)L"Dotted");
-	AppendMenu(menu_pattern, MF_STRING, 105, (LPCTSTR)L"No Pattern");
-
-	InsertMenu(menu_algorithm, 0, MF_STRING, 200, (LPCTSTR)L"Scan Line");
-	AppendMenu(menu_algorithm, MF_STRING, 201, (LPCTSTR)L"Recursive Flood");
-	AppendMenu(menu_algorithm, MF_STRING, 202, (LPCTSTR)L"Flood");*/
+	AppendMenu(menu_color, MF_STRING, 16, (LPCTSTR)L"White");*/
 }
 
 void InitGraphics()
@@ -627,7 +523,7 @@ void DrawLine(int x1, int y1, int x2, int y2)
 		x = (float)x1; y = (float)y1;
 		for (i = 0; i <= length; i++)
 		{
-			DrawPixel(Arred((int)x), Arred((int)y), false);
+			DrawPixel(Arred((int)x), Arred((int)y));
 			x = x + dx;    // dx = 1 ou -1 ou m
 			y = y + dy;   // yx = 1 ou -1 ou 1/m
 		}
@@ -658,14 +554,14 @@ void InsertVertex(float_polygon_type &poly, float x, float y)
 
 void PlotCircle(int xc, int yc, int x, int y)
 {
-	DrawPixel(xc + x, yc + y, false);
-	DrawPixel(xc + y, yc + x, false);
-	DrawPixel(xc + y, yc - x, false);
-	DrawPixel(xc + x, yc - y, false);
-	DrawPixel(xc - x, yc + y, false);
-	DrawPixel(xc - y, yc + x, false);
-	DrawPixel(xc - y, yc - x, false);
-	DrawPixel(xc - x, yc - y, false);
+	DrawPixel(xc + x, yc + y);
+	DrawPixel(xc + y, yc + x);
+	DrawPixel(xc + y, yc - x);
+	DrawPixel(xc + x, yc - y);
+	DrawPixel(xc - x, yc + y);
+	DrawPixel(xc - y, yc + x);
+	DrawPixel(xc - y, yc - x);
+	DrawPixel(xc - x, yc - y);
 }
 
 void PlotXorCircle(int xc, int yc, int x, int y)
@@ -1115,85 +1011,63 @@ void DrawPolygon(float_polygon_type poly)
 
 /////////////////////////////////////////////////////////////////////////
 
+
+
+
+
 void main()
 {
-	//	Shape shape = Line;
-	//	SetGraphicsColor(color, 1);
-	//
-	//	InitGraf();
-	//
+		Shape shape = Line;
+		SetGraphicsColor(color, 1);
+
+		InitGraf();
+	
 	//	int p0_x, p0_y, p1_x, p1_y, x_1, y_1, x_2, y_2;
-	//	int r = 0, menu_it = 0;
+	//	int r = 0;
+		int menu_it = 0;
 	//	polygon_type polygon;
 	//	polygon.n = 0;
 	//
-	//	InitGraphics();
-	//
-	//	menu_item = 0;
-	//	//CheckMenuItem(menu_color, 1, MF_CHECKED);
-	//	CheckMenuItem(menu_draw, 21, MF_CHECKED);
-	//	//CheckMenuItem(menu_pattern, 100 + pattern_max, MF_CHECKED);
-	//	//CheckMenuItem(menu_algorithm, 200, MF_CHECKED);
-	//
-	//	current_pattern = pattern_max;
-	//	algorithmType = LINE_SCAN;
-	//
-	//	while (key_input != ESC)						// ESC exits the program
-	//	{
-	//		CheckGraphicsMsg();
-	//
-	//		if (menu_it != menu_item)
-	//
-	//			/*if (menu_item >= 200){
-	//				for (int i = 0; i <= 2; i++)
-	//				CheckMenuItem(menu_algorithm, 200 + i, MF_UNCHECKED);
-	//
-	//				CheckMenuItem(menu_algorithm, menu_item, MF_CHECKED);
-	//				if (menu_item >= 200 && menu_item <= 202){
-	//				algorithmType = menu_item - 200;
-	//				}
-	//
-	//				menu_it = menu_item;
-	//
-	//				}*/
-	//				/*else if (menu_item >= 100){
-	//					for (int i = 0; i <= pattern_max; i++)
-	//					CheckMenuItem(menu_pattern, 100 + i, MF_UNCHECKED);
-	//
-	//					CheckMenuItem(menu_pattern, menu_item, MF_CHECKED);
-	//					if (menu_item >= 100 && menu_item <= 100 + pattern_max)
-	//					current_pattern = menu_item - 100;
-	//					menu_it = menu_item;
-	//					}*/
-	//					//			else {
-	//					switch (menu_item){
-	//					case 21:
-	//						CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
-	//						CheckMenuItem(menu_draw, 21, MF_CHECKED);
-	//						menu_it = menu_item;
-	//						shape = Line;
-	//						break;
-	//					case 22:
-	//						CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
-	//						CheckMenuItem(menu_draw, 22, MF_CHECKED);
-	//						menu_it = menu_item;
-	//						shape = Circle;
-	//						break;
-	//						/*default:
-	//							int i;
-	//							for (i = 1; i <= 16; i++)
-	//							CheckMenuItem(menu_color, i, MF_UNCHECKED);
-	//							CheckMenuItem(menu_color, menu_item, MF_CHECKED);
-	//							if (menu_item >= 1 && menu_item <= 16)
-	//							color = menu_item - 1;
-	//
-	//							menu_it = menu_item;*/
-	//		}
-	//
-	//		//		}
-	//
-	//		if (mouse_action == L_MOUSE_DOWN)
-	//		{
+		InitGraphics();
+	
+		menu_item = 0;
+		//CheckMenuItem(menu_color, 1, MF_CHECKED);
+		CheckMenuItem(menu_draw, 21, MF_CHECKED);
+	
+		while (key_input != ESC)						// ESC exits the program
+		{
+			CheckGraphicsMsg();
+
+			if (menu_it != menu_item)
+			{
+						switch (menu_item){
+						case 21:
+							CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
+							CheckMenuItem(menu_draw, 21, MF_CHECKED);
+							menu_it = menu_item;
+							shape = Line;
+							break;
+						case 22:
+							CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
+							CheckMenuItem(menu_draw, 22, MF_CHECKED);
+							menu_it = menu_item;
+							shape = Circle;
+							break;
+							/*default:
+								int i;
+								for (i = 1; i <= 16; i++)
+								CheckMenuItem(menu_color, i, MF_UNCHECKED);
+								CheckMenuItem(menu_color, menu_item, MF_CHECKED);
+								if (menu_item >= 1 && menu_item <= 16)
+								color = menu_item - 1;
+	
+								menu_it = menu_item;*/
+					}
+	
+			}
+	
+			if (mouse_action == L_MOUSE_DOWN)
+			{
 	//			// Pick first point up 
 	//			if (shape == Line){
 	//				if (polygon.n == 0)
@@ -1208,9 +1082,9 @@ void main()
 	//				p0_y = p1_y = mouse_y;
 	//				r = 0;
 	//			}
-	//		}
-	//		if (mouse_action == L_MOUSE_MOVE_DOWN)
-	//		{
+			}
+			if (mouse_action == L_MOUSE_MOVE_DOWN)
+			{
 	//			// Example of elastic line
 	//			if (p1_x != mouse_x || p1_y != mouse_y)
 	//			{
@@ -1239,9 +1113,9 @@ void main()
 	//				x_2 = p1_x;
 	//				y_2 = p1_y;
 	//			}
-	//		}
-	//		else  if (mouse_action == L_MOUSE_UP)
-	//		{
+			}
+			else  if (mouse_action == L_MOUSE_UP)
+			{
 	//			if (shape == Line) {
 	//				DrawLineXor(p0_x, p0_y, p1_x, p1_y);
 	//				DrawLine(p0_x, p0_y, p1_x, p1_y);
@@ -1257,9 +1131,9 @@ void main()
 	//				DrawCircle(p0_x, p0_y, r);
 	//			}
 	//			mouse_action = NO_ACTION;
-	//		}
-	//		else  if (mouse_action == R_MOUSE_DOWN)
-	//		{
+			}
+			else  if (mouse_action == R_MOUSE_DOWN)
+			{
 	//			if (shape == Line){
 	//				if (polygon.n != 0){
 	//					DrawPoly(polygon);
@@ -1281,8 +1155,8 @@ void main()
 	//			}
 	//
 	//			mouse_action = NO_ACTION;
-	//		}
-	//	}
-	//
-	//	CloseGraphics();
+			}
+		}
+	
+		CloseGraphics();
 }
