@@ -22,6 +22,7 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPa
 
 #define Max(x, y) ((x) > (y) ? (x) : (y))
 #define Arred(x) ((int)((x) + 0.5))   // only for x>=0
+#define sqr(x) ((x)*(x))
 
 #define PI 3.1415926535897932384626433832795
 #define ENTER 13
@@ -768,14 +769,13 @@ protected:
 public:
 	Line(float x1, float y1, float x2, float y2) : x1(x1), y1(y1), x2(x2), y2(y2) { }
 
-	virtual bool Pick(float x, float y, float d)
+	virtual bool Pick(float x, float y, float d) // World coordinates
 	{
-		float dist2, xmin, ymin, xmax, ymax;
-		xmin = min(x1, x2);
-		ymin = min(y1, y2);
-		xmax = max(x1, x2);
-		ymax = max(y1, y2);
-		dist2 = sqrt((x - x1)*(y2 - y1) - (y - y1)*(x2 - x1)) / (sqrt(x2 - x1) + sqrt(y2 - y1));
+		float xmin = min(x1, x2);
+		float ymin = min(y1, y2);
+		float xmax = max(x1, x2);
+		float ymax = max(y1, y2);
+		float dist2 = sqr((x - x1)*(y2 - y1) - (y - y1)*(x2 - x1)) / (sqr(x2 - x1) + sqr(y2 - y1));
 		return (dist2 <= d*d) && ((xmin - d <= x) && (x <= xmax + d) && (ymin - d <= y) && (y <= ymax + d));
 	}
 
@@ -785,12 +785,31 @@ public:
 	}
 };
 
-class Polygon : public Entity {
+class Polygon : public Entity
+{
 
 };
 
-class Circle : public Entity {
+class Circle : public Entity
+{
+protected:
+	float x0, y0, r;
+public:
+	Circle(float x0, float y0, float r) : x0(x0), y0(y0), r(r) { }
 
+	virtual bool Pick(float x, float y, float d) // World coordinates
+	{
+		float dist2 = sqr(x - x0) + sqr(y - y0);
+		if (r - d <= 0)
+			return dist2 <= sqr(d + r);
+		else
+			return sqr(r - d) <= dist2 && dist2 <= sqr(d + r);
+	}
+
+	virtual bool Draw()
+	{
+		// TODO
+	}
 };
 
 std::list<Entity*> entities;
@@ -1045,7 +1064,7 @@ float_point_type Intersection(float_point_type P1, float_point_type P2,
 		p.x = wxh;
 		p.y = (P1.y + ((float)(P2.y - P1.y)) / (P2.x - P1.x)*(p.x - P1.x));
 		break;
-	case TOP: 
+	case TOP:
 		p.y = wyh;
 		p.x = (P1.x + ((float)(P2.x - P1.x)) / (P2.y - P1.y)*(p.y - P1.y));
 		break;
@@ -1091,191 +1110,191 @@ void DrawPolygon(float_polygon_type poly)
 {
 	/*float_polygon_type poly_out;
 	for (int i = 0; i < poly.n; i++) // Transformação do usuário
-		//<Matriz>.DoTransformatio(poly.vertex[i].x, poly.vertex[i].y)
-		//Call Polygon Clipping // recorte do poligono
-		if (poly_out.n > 0) // resultou em poligono dentro
-		{
-		for (i = 0; i < poly_out.n; i++) // transformacao de janelamento
-		{
-			//ViewingTransform(<poly _out.vertex[i].x>, <pol _out.vertex[i].y>);
-			//Normalizado Para Dispositivo(<poly_out.vertex[i].x>, <poly_out.vertex[i].y>);
-		}
-		if (fill_polygon)
-			FillPolygon(poly_out); // preenche poligono
-		else DrawPolyg(poly_out); // desenha
-		}*/
+	//<Matriz>.DoTransformatio(poly.vertex[i].x, poly.vertex[i].y)
+	//Call Polygon Clipping // recorte do poligono
+	if (poly_out.n > 0) // resultou em poligono dentro
+	{
+	for (i = 0; i < poly_out.n; i++) // transformacao de janelamento
+	{
+	//ViewingTransform(<poly _out.vertex[i].x>, <pol _out.vertex[i].y>);
+	//Normalizado Para Dispositivo(<poly_out.vertex[i].x>, <poly_out.vertex[i].y>);
+	}
+	if (fill_polygon)
+	FillPolygon(poly_out); // preenche poligono
+	else DrawPolyg(poly_out); // desenha
+	}*/
 }
 
 /////////////////////////////////////////////////////////////////////////
 
 void main()
 {
-//	Shape shape = Line;
-//	SetGraphicsColor(color, 1);
-//
-//	InitGraf();
-//
-//	int p0_x, p0_y, p1_x, p1_y, x_1, y_1, x_2, y_2;
-//	int r = 0, menu_it = 0;
-//	polygon_type polygon;
-//	polygon.n = 0;
-//
-//	InitGraphics();
-//
-//	menu_item = 0;
-//	//CheckMenuItem(menu_color, 1, MF_CHECKED);
-//	CheckMenuItem(menu_draw, 21, MF_CHECKED);
-//	//CheckMenuItem(menu_pattern, 100 + pattern_max, MF_CHECKED);
-//	//CheckMenuItem(menu_algorithm, 200, MF_CHECKED);
-//
-//	current_pattern = pattern_max;
-//	algorithmType = LINE_SCAN;
-//
-//	while (key_input != ESC)						// ESC exits the program
-//	{
-//		CheckGraphicsMsg();
-//
-//		if (menu_it != menu_item)
-//
-//			/*if (menu_item >= 200){
-//				for (int i = 0; i <= 2; i++)
-//				CheckMenuItem(menu_algorithm, 200 + i, MF_UNCHECKED);
-//
-//				CheckMenuItem(menu_algorithm, menu_item, MF_CHECKED);
-//				if (menu_item >= 200 && menu_item <= 202){
-//				algorithmType = menu_item - 200;
-//				}
-//
-//				menu_it = menu_item;
-//
-//				}*/
-//				/*else if (menu_item >= 100){
-//					for (int i = 0; i <= pattern_max; i++)
-//					CheckMenuItem(menu_pattern, 100 + i, MF_UNCHECKED);
-//
-//					CheckMenuItem(menu_pattern, menu_item, MF_CHECKED);
-//					if (menu_item >= 100 && menu_item <= 100 + pattern_max)
-//					current_pattern = menu_item - 100;
-//					menu_it = menu_item;
-//					}*/
-//					//			else {
-//					switch (menu_item){
-//					case 21:
-//						CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
-//						CheckMenuItem(menu_draw, 21, MF_CHECKED);
-//						menu_it = menu_item;
-//						shape = Line;
-//						break;
-//					case 22:
-//						CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
-//						CheckMenuItem(menu_draw, 22, MF_CHECKED);
-//						menu_it = menu_item;
-//						shape = Circle;
-//						break;
-//						/*default:
-//							int i;
-//							for (i = 1; i <= 16; i++)
-//							CheckMenuItem(menu_color, i, MF_UNCHECKED);
-//							CheckMenuItem(menu_color, menu_item, MF_CHECKED);
-//							if (menu_item >= 1 && menu_item <= 16)
-//							color = menu_item - 1;
-//
-//							menu_it = menu_item;*/
-//		}
-//
-//		//		}
-//
-//		if (mouse_action == L_MOUSE_DOWN)
-//		{
-//			// Pick first point up 
-//			if (shape == Line){
-//				if (polygon.n == 0)
-//				{
-//					p0_x = p1_x = mouse_x;
-//					p0_y = p1_y = mouse_y;
-//					InsertVertex(polygon, p0_x, p0_y);
-//				}
-//			}
-//			if (shape == Circle){
-//				p0_x = p1_x = mouse_x;
-//				p0_y = p1_y = mouse_y;
-//				r = 0;
-//			}
-//		}
-//		if (mouse_action == L_MOUSE_MOVE_DOWN)
-//		{
-//			// Example of elastic line
-//			if (p1_x != mouse_x || p1_y != mouse_y)
-//			{
-//				// Erase previous line. NOTE: using XOR line
-//				if (shape == Line) {
-//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-//				}
-//				if (shape == Circle) {
-//					CircleBresenham(p0_x, p0_y, r);
-//				}
-//
-//				p1_x = mouse_x;
-//				p1_y = mouse_y;
-//
-//				// Draw new line
-//				if (shape == Line) {
-//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-//				}
-//				if (shape == Circle) {
-//					r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
-//					CircleBresenham(p0_x, p0_y, r);
-//				}
-//
-//				x_1 = p0_x;
-//				y_1 = p0_y;
-//				x_2 = p1_x;
-//				y_2 = p1_y;
-//			}
-//		}
-//		else  if (mouse_action == L_MOUSE_UP)
-//		{
-//			if (shape == Line) {
-//				DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-//				DrawLine(p0_x, p0_y, p1_x, p1_y);
-//				p0_x = p1_x = mouse_x;
-//				p0_y = p1_y = mouse_y;
-//
-//				if (polygon.n > 0 &&
-//					(polygon.vertex[polygon.n - 1].x != p0_x
-//					|| polygon.vertex[polygon.n - 1].y != p0_y))
-//					InsertVertex(polygon, p0_x, p0_y);
-//			}
-//			if (shape == Circle) {
-//				DrawCircle(p0_x, p0_y, r);
-//			}
-//			mouse_action = NO_ACTION;
-//		}
-//		else  if (mouse_action == R_MOUSE_DOWN)
-//		{
-//			if (shape == Line){
-//				if (polygon.n != 0){
-//					DrawPoly(polygon);
-//					/*if (algorithmType == LINE_SCAN) {
-//						edge_list_type list;
-//						FillPolygon(polygon, list);
-//						}
-//						else if (algorithmType == FLOOD_FILL_RECURSIVE){
-//						FloodFillRecursive(polygon);
-//						}
-//						else {
-//						FloodFill(polygon);
-//						}*/
-//					polygon.n = 0;
-//				}
-//			}
-//			if (shape == Circle) {
-//				// FloodFillNotRecCircle(p0_x, p0_y, r);
-//			}
-//
-//			mouse_action = NO_ACTION;
-//		}
-//	}
-//
-//	CloseGraphics();
+	//	Shape shape = Line;
+	//	SetGraphicsColor(color, 1);
+	//
+	//	InitGraf();
+	//
+	//	int p0_x, p0_y, p1_x, p1_y, x_1, y_1, x_2, y_2;
+	//	int r = 0, menu_it = 0;
+	//	polygon_type polygon;
+	//	polygon.n = 0;
+	//
+	//	InitGraphics();
+	//
+	//	menu_item = 0;
+	//	//CheckMenuItem(menu_color, 1, MF_CHECKED);
+	//	CheckMenuItem(menu_draw, 21, MF_CHECKED);
+	//	//CheckMenuItem(menu_pattern, 100 + pattern_max, MF_CHECKED);
+	//	//CheckMenuItem(menu_algorithm, 200, MF_CHECKED);
+	//
+	//	current_pattern = pattern_max;
+	//	algorithmType = LINE_SCAN;
+	//
+	//	while (key_input != ESC)						// ESC exits the program
+	//	{
+	//		CheckGraphicsMsg();
+	//
+	//		if (menu_it != menu_item)
+	//
+	//			/*if (menu_item >= 200){
+	//				for (int i = 0; i <= 2; i++)
+	//				CheckMenuItem(menu_algorithm, 200 + i, MF_UNCHECKED);
+	//
+	//				CheckMenuItem(menu_algorithm, menu_item, MF_CHECKED);
+	//				if (menu_item >= 200 && menu_item <= 202){
+	//				algorithmType = menu_item - 200;
+	//				}
+	//
+	//				menu_it = menu_item;
+	//
+	//				}*/
+	//				/*else if (menu_item >= 100){
+	//					for (int i = 0; i <= pattern_max; i++)
+	//					CheckMenuItem(menu_pattern, 100 + i, MF_UNCHECKED);
+	//
+	//					CheckMenuItem(menu_pattern, menu_item, MF_CHECKED);
+	//					if (menu_item >= 100 && menu_item <= 100 + pattern_max)
+	//					current_pattern = menu_item - 100;
+	//					menu_it = menu_item;
+	//					}*/
+	//					//			else {
+	//					switch (menu_item){
+	//					case 21:
+	//						CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
+	//						CheckMenuItem(menu_draw, 21, MF_CHECKED);
+	//						menu_it = menu_item;
+	//						shape = Line;
+	//						break;
+	//					case 22:
+	//						CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
+	//						CheckMenuItem(menu_draw, 22, MF_CHECKED);
+	//						menu_it = menu_item;
+	//						shape = Circle;
+	//						break;
+	//						/*default:
+	//							int i;
+	//							for (i = 1; i <= 16; i++)
+	//							CheckMenuItem(menu_color, i, MF_UNCHECKED);
+	//							CheckMenuItem(menu_color, menu_item, MF_CHECKED);
+	//							if (menu_item >= 1 && menu_item <= 16)
+	//							color = menu_item - 1;
+	//
+	//							menu_it = menu_item;*/
+	//		}
+	//
+	//		//		}
+	//
+	//		if (mouse_action == L_MOUSE_DOWN)
+	//		{
+	//			// Pick first point up 
+	//			if (shape == Line){
+	//				if (polygon.n == 0)
+	//				{
+	//					p0_x = p1_x = mouse_x;
+	//					p0_y = p1_y = mouse_y;
+	//					InsertVertex(polygon, p0_x, p0_y);
+	//				}
+	//			}
+	//			if (shape == Circle){
+	//				p0_x = p1_x = mouse_x;
+	//				p0_y = p1_y = mouse_y;
+	//				r = 0;
+	//			}
+	//		}
+	//		if (mouse_action == L_MOUSE_MOVE_DOWN)
+	//		{
+	//			// Example of elastic line
+	//			if (p1_x != mouse_x || p1_y != mouse_y)
+	//			{
+	//				// Erase previous line. NOTE: using XOR line
+	//				if (shape == Line) {
+	//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+	//				}
+	//				if (shape == Circle) {
+	//					CircleBresenham(p0_x, p0_y, r);
+	//				}
+	//
+	//				p1_x = mouse_x;
+	//				p1_y = mouse_y;
+	//
+	//				// Draw new line
+	//				if (shape == Line) {
+	//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+	//				}
+	//				if (shape == Circle) {
+	//					r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
+	//					CircleBresenham(p0_x, p0_y, r);
+	//				}
+	//
+	//				x_1 = p0_x;
+	//				y_1 = p0_y;
+	//				x_2 = p1_x;
+	//				y_2 = p1_y;
+	//			}
+	//		}
+	//		else  if (mouse_action == L_MOUSE_UP)
+	//		{
+	//			if (shape == Line) {
+	//				DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+	//				DrawLine(p0_x, p0_y, p1_x, p1_y);
+	//				p0_x = p1_x = mouse_x;
+	//				p0_y = p1_y = mouse_y;
+	//
+	//				if (polygon.n > 0 &&
+	//					(polygon.vertex[polygon.n - 1].x != p0_x
+	//					|| polygon.vertex[polygon.n - 1].y != p0_y))
+	//					InsertVertex(polygon, p0_x, p0_y);
+	//			}
+	//			if (shape == Circle) {
+	//				DrawCircle(p0_x, p0_y, r);
+	//			}
+	//			mouse_action = NO_ACTION;
+	//		}
+	//		else  if (mouse_action == R_MOUSE_DOWN)
+	//		{
+	//			if (shape == Line){
+	//				if (polygon.n != 0){
+	//					DrawPoly(polygon);
+	//					/*if (algorithmType == LINE_SCAN) {
+	//						edge_list_type list;
+	//						FillPolygon(polygon, list);
+	//						}
+	//						else if (algorithmType == FLOOD_FILL_RECURSIVE){
+	//						FloodFillRecursive(polygon);
+	//						}
+	//						else {
+	//						FloodFill(polygon);
+	//						}*/
+	//					polygon.n = 0;
+	//				}
+	//			}
+	//			if (shape == Circle) {
+	//				// FloodFillNotRecCircle(p0_x, p0_y, r);
+	//			}
+	//
+	//			mouse_action = NO_ACTION;
+	//		}
+	//	}
+	//
+	//	CloseGraphics();
 }
