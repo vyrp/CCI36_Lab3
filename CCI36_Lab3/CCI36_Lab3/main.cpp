@@ -746,118 +746,6 @@ void DrawCircle(int xc, int yc, int r)
 
 enum Shape { Line, Circle };
 
-
-
-///////////////////////////////////////////////////////////////////////// Croata
-
-class Entity
-{
-protected:
-	my_color color;
-
-public:
-	Entity()
-	{
-		SetUnactive();
-	}
-
-	void SetActive()
-	{
-		color = MY_RED;
-	}
-
-	void SetUnactive()
-	{
-		color = MY_WHITE;
-	}
-
-	virtual bool Pick(float x, float y, float d) = 0;
-	virtual void Draw() = 0;
-};
-
-class Segment : public Entity
-{
-protected:
-	float x1, y1, x2, y2;
-
-public:
-	Segment(float x1, float y1, float x2, float y2) : x1(x1), y1(y1), x2(x2), y2(y2) { }
-
-	virtual bool Pick(float x, float y, float d) // World coordinates
-	{
-		float xmin = min(x1, x2);
-		float ymin = min(y1, y2);
-		float xmax = max(x1, x2);
-		float ymax = max(y1, y2);
-		float dist2 = sqr((x - x1)*(y2 - y1) - (y - y1)*(x2 - x1)) / (sqr(x2 - x1) + sqr(y2 - y1));
-		return (dist2 <= d*d) && ((xmin - d <= x) && (x <= xmax + d) && (ymin - d <= y) && (y <= ymax + d));
-	}
-
-	virtual void Draw()
-	{
-		// TODO
-	}
-};
-
-class Polygon : public Entity
-{
-protected:
-	std::vector<Segment> edges;
-
-public:
-	Polygon(float_polygon_type polygon)
-	{
-		for (int i = 0; i < polygon.n - 1; i++)
-		{
-			edges.push_back(Segment(polygon.vertex[i].x, polygon.vertex[i].y, polygon.vertex[i+1].x, polygon.vertex[i+1].y));
-		}
-	}
-
-	virtual bool Pick(float x, float y, float d) // World coordinates
-	{
-		for (int i = 0; i < edges.size(); i++)
-		{
-			if (edges[i].Pick(x, y, d))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	virtual void Draw()
-	{
-		for (int i = 0; i < edges.size(); i++)
-		{
-			edges[i].Draw();
-		}
-	}
-};
-
-class Circle : public Entity
-{
-protected:
-	float x0, y0, r;
-public:
-	Circle(float x0, float y0, float r) : x0(x0), y0(y0), r(r) { }
-
-	virtual bool Pick(float x, float y, float d) // World coordinates
-	{
-		float dist2 = sqr(x - x0) + sqr(y - y0);
-		if (r - d <= 0)
-			return dist2 <= sqr(d + r);
-		else
-			return sqr(r - d) <= dist2 && dist2 <= sqr(d + r);
-	}
-
-	virtual void Draw()
-	{
-		// TODO
-	}
-};
-
-std::list<Entity*> entities;
-
 ///////////////////////////////////////////////////////////////////////// Harry
 
 float x_start, x_end, y_start, y_end, heigth, width; /* screem bitmap size */
@@ -867,8 +755,6 @@ float wxs = 0.0, wxh = 1.0, wys = 0.0, wyh = 1.0;  /* windows corners variables 
 float vxs = 0.0, vxh = 1.0, vys = 0.0, vyh = 1.0; /* viewport corners variables */
 
 float vwsx, vwsy; /* viewing transformation scale */
-
-
 
 int inside = 0, botton = 1, top = 2, right = 4, left = 8;
 float x_current, y_current;
@@ -911,8 +797,7 @@ float number) */
 }
 
 
-void XYEdgeIntersection(float  *x1, float *x2, float *y1, float *y2,
-	float wy, float *x, float *y)
+void XYEdgeIntersection(float  *x1, float *x2, float *y1, float *y2, float wy, float *x, float *y)
 {
 	*x = *x1 + (*x2 - *x1)*(wy - *y1) / (*y2 - *y1);
 	*y = wy;
@@ -1093,8 +978,7 @@ bool Visible(float_point_type P, win_edge_type edge)
 	}
 	return false;
 }
-float_point_type Intersection(float_point_type P1, float_point_type P2,
-	win_edge_type edge)
+float_point_type Intersection(float_point_type P1, float_point_type P2, win_edge_type edge)
 {
 	float_point_type p;
 	switch (edge)
@@ -1118,8 +1002,7 @@ float_point_type Intersection(float_point_type P1, float_point_type P2,
 	return p;
 
 }
-void ClipEdge(float_point_type P1, float_point_type P2, win_edge_type edge,
-	float_polygon_type &poly_out)
+void ClipEdge(float_point_type P1, float_point_type P2, win_edge_type edge, float_polygon_type &poly_out)
 {
 	float_point_type Pi;
 	if (Visible(P1, edge)) // P is at the same side of window
@@ -1143,10 +1026,7 @@ void ClipPolygon(float_polygon_type poly, float_polygon_type &poly_out)
 			ClipEdge(poly.vertex[i], poly.vertex[i + 1], edge, poly_out);
 
 		poly = poly_out;// Copy poly_out to poly
-
-
 	}
-
 }
 
 void DrawPoly(polygon_type &polygon) {
@@ -1175,6 +1055,150 @@ void DrawPolygon(float_polygon_type poly)
 		//	FillPolygon(poly_out); // preenche poligono
 	}
 }
+
+///////////////////////////////////////////////////////////////////////// Croata
+
+class Entity
+{
+protected:
+	my_color color;
+
+public:
+	Entity()
+	{
+		SetUnactive();
+	}
+
+	void SetActive()
+	{
+		color = MY_RED;
+	}
+
+	void SetUnactive()
+	{
+		color = MY_WHITE;
+	}
+
+	virtual bool Pick(float x, float y, float d) = 0;
+	virtual void Draw() = 0;
+};
+
+class Segment : public Entity
+{
+protected:
+	float x1, y1, x2, y2;
+
+public:
+	Segment(float x1, float y1, float x2, float y2) : x1(x1), y1(y1), x2(x2), y2(y2) { }
+
+	virtual bool Pick(float x, float y, float d) // World coordinates
+	{
+		float xmin = min(x1, x2);
+		float ymin = min(y1, y2);
+		float xmax = max(x1, x2);
+		float ymax = max(y1, y2);
+		float dist2 = sqr((x - x1)*(y2 - y1) - (y - y1)*(x2 - x1)) / (sqr(x2 - x1) + sqr(y2 - y1));
+		return (dist2 <= d*d) && ((xmin - d <= x) && (x <= xmax + d) && (ymin - d <= y) && (y <= ymax + d));
+	}
+
+	virtual void Draw()
+	{
+		DrawLine2D(x1, y1, x2, y2);
+	}
+};
+
+class Polygon : public Entity
+{
+protected:
+	std::vector<Segment> edges;
+	float_polygon_type polygon;
+
+public:
+	Polygon(float_polygon_type polygon)
+	{
+		this->polygon = polygon;
+
+		for (int i = 0; i < polygon.n; i++)
+		{
+			edges.push_back(Segment(polygon.vertex[i].x, polygon.vertex[i].y, polygon.vertex[(i + 1) % polygon.n].x, polygon.vertex[(i + 1) % polygon.n].y));
+		}
+	}
+
+	virtual bool Pick(float x, float y, float d) // World coordinates
+	{
+		for (int i = 0; i < edges.size(); i++)
+		{
+			if (edges[i].Pick(x, y, d))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	virtual void Draw()
+	{
+		DrawPolygon(polygon);
+	}
+};
+
+class Circle : public Entity
+{
+protected:
+	float x0, y0, r;
+public:
+	Circle(float x0, float y0, float r) : x0(x0), y0(y0), r(r) { }
+
+	virtual bool Pick(float x, float y, float d) // World coordinates
+	{
+		float dist2 = sqr(x - x0) + sqr(y - y0);
+		if (r - d <= 0)
+			return dist2 <= sqr(d + r);
+		else
+			return sqr(r - d) <= dist2 && dist2 <= sqr(d + r);
+	}
+
+	virtual void Draw()
+	{
+		float rx = r, ry = r, x0 = this->x0, y0 = this->y0;
+		int rix, riy, xi0, yi0;
+		ViewingTransformation(&x0, &y0);
+		ViewingTransformation(&rx, &ry);
+		NormalizedToDevice(x0, y0, &xi0, &yi0);
+		NormalizedToDevice(rx, ry, &rix, &riy);
+		
+		int x1, y1, x2, y2;
+		if (rx > 0)
+		{
+			x1 = x0 - rx;
+			x2 = x0 + rx;
+		}
+		else if (rx == 0) // make the ellipse 2 pixels wide (a line)
+		{
+			x1 = x0;
+			x2 = x0 + 1;
+		}
+		else return; // wrong radius
+
+		if (ry > 0)
+		{
+			y1 = y0 - ry;
+			y2 = y0 + ry;
+		}
+		else if (ry == 0) // make the ellipse 2 pixels wide (a line)
+		{
+			y1 = y0;
+			y2 = y0 + 1;
+		}
+		else return;
+
+		HBRUSH brush = (HBRUSH)GetStockObject(NULL_BRUSH);
+		SelectObject(hdc, brush);
+		Ellipse(hdc, x1, y1, x2, y2);  // Draw ellipse
+	}
+};
+
+std::list<Entity*> entities;
 
 /////////////////////////////////////////////////////////////////////////
 
