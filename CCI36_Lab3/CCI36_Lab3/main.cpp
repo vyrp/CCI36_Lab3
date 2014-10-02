@@ -16,6 +16,7 @@
 #include <string.h>
 #include <math.h>
 #include <list>
+#include <vector>
 #include <algorithm>
 
 static LRESULT CALLBACK WinProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
@@ -753,21 +754,34 @@ class Entity
 {
 protected:
 	my_color color;
+
 public:
 	Entity()
 	{
+		SetUnactive();
+	}
+
+	void SetActive()
+	{
+		color = MY_RED;
+	}
+
+	void SetUnactive()
+	{
 		color = MY_WHITE;
 	}
+
 	virtual bool Pick(float x, float y, float d) = 0;
-	virtual bool Draw() = 0;
+	virtual void Draw() = 0;
 };
 
-class Line : public Entity
+class Segment : public Entity
 {
 protected:
 	float x1, y1, x2, y2;
+
 public:
-	Line(float x1, float y1, float x2, float y2) : x1(x1), y1(y1), x2(x2), y2(y2) { }
+	Segment(float x1, float y1, float x2, float y2) : x1(x1), y1(y1), x2(x2), y2(y2) { }
 
 	virtual bool Pick(float x, float y, float d) // World coordinates
 	{
@@ -779,7 +793,7 @@ public:
 		return (dist2 <= d*d) && ((xmin - d <= x) && (x <= xmax + d) && (ymin - d <= y) && (y <= ymax + d));
 	}
 
-	virtual bool Draw()
+	virtual void Draw()
 	{
 		// TODO
 	}
@@ -787,7 +801,37 @@ public:
 
 class Polygon : public Entity
 {
+protected:
+	std::vector<Segment> edges;
 
+public:
+	Polygon(float_polygon_type polygon)
+	{
+		for (int i = 0; i < polygon.n - 1; i++)
+		{
+			edges.push_back(Segment(polygon.vertex[i].x, polygon.vertex[i].y, polygon.vertex[i+1].x, polygon.vertex[i+1].y));
+		}
+	}
+
+	virtual bool Pick(float x, float y, float d) // World coordinates
+	{
+		for (int i = 0; i < edges.size(); i++)
+		{
+			if (edges[i].Pick(x, y, d))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	virtual void Draw()
+	{
+		for (int i = 0; i < edges.size(); i++)
+		{
+			edges[i].Draw();
+		}
+	}
 };
 
 class Circle : public Entity
@@ -806,7 +850,7 @@ public:
 			return sqr(r - d) <= dist2 && dist2 <= sqr(d + r);
 	}
 
-	virtual bool Draw()
+	virtual void Draw()
 	{
 		// TODO
 	}
