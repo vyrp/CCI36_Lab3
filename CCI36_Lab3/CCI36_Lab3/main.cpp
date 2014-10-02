@@ -18,8 +18,6 @@
 #include <list>
 #include <algorithm>
 
-using std::list;
-
 static LRESULT CALLBACK WinProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam);
 
 #define Max(x, y) ((x) > (y) ? (x) : (y))
@@ -1067,19 +1065,52 @@ enum Shape { Line, Circle };
 
 ///////////////////////////////////////////////////////////////////////// Croata
 
-class Entity {
-private:
+class Entity
+{
+protected:
 	my_color color;
 public:
 	Entity()
 	{
 		color = MY_WHITE;
 	}
-	virtual bool Pick(int x, int y) = 0;
+	virtual bool Pick(float x, float y, float d) = 0;
 	virtual bool Draw() = 0;
 };
 
-list<Entity*> entities;
+class Line : public Entity
+{
+protected:
+	float x1, y1, x2, y2;
+public:
+	Line(float x1, float y1, float x2, float y2) : x1(x1), y1(y1), x2(x2), y2(y2) { }
+
+	virtual bool Pick(float x, float y, float d)
+	{
+		float dist2, xmin, ymin, xmax, ymax;
+		xmin = min(x1, x2);
+		ymin = min(y1, y2);
+		xmax = max(x1, x2);
+		ymax = max(y1, y2);
+		dist2 = sqrt((x - x1)*(y2 - y1) - (y - y1)*(x2 - x1)) / (sqrt(x2 - x1) + sqrt(y2 - y1));
+		return (dist2 <= d*d) && ((xmin - d <= x) && (x <= xmax + d) && (ymin - d <= y) && (y <= ymax + d));
+	}
+
+	virtual bool Draw()
+	{
+		// TODO
+	}
+};
+
+class Polygon : public Entity {
+
+};
+
+class Circle : public Entity {
+
+};
+
+std::list<Entity*> entities;
 
 ///////////////////////////////////////////////////////////////////////// Harry
 
