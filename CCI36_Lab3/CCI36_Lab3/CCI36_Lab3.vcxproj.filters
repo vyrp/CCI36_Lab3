@@ -27,12 +27,6 @@
     <ClInclude Include="grafbase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Croata.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Harry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
