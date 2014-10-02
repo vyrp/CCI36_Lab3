@@ -646,7 +646,7 @@ bool Empty(int x, int y)
 }
 
 
-void InsertVertex(float_polygon_type &poly, int x, int y)
+void InsertVertex(float_polygon_type &poly, float x, float y)
 {	// insert x,y as the last element
 	if (poly.n < MAX_POLY)
 	{
@@ -973,13 +973,12 @@ bool Clip2D(float *x1, float *y1, float *x2, float *y2)
 }
 
 
-void DrawLine2D(float x2, float y2)
+void DrawLine2D(float x1, float y1, float x2, float y2)
 {
-	float x1, y1;
 	int xi1, yi1, xi2, yi2;
+	//x1 = x_current;
+	//y1 = y_current;
 
-	x1 = x_current;
-	y1 = y_current;
 
 	//TO DO <MATRIZ>.DoTransformation(&x1, &y1);
 	//TO DO  Faça Transformacao x2 y2
@@ -996,7 +995,7 @@ void DrawLine2D(float x2, float y2)
 
 void LineAbs2D(float x, float y)
 {
-	DrawLine2D(x, y);
+	DrawLine2D(x_current, y_current, x, y);
 	x_current = x;
 	y_current = y;
 }
@@ -1006,7 +1005,7 @@ void LineRel2D(float dx, float dy)
 {
 	dx += x_current;
 	dy += y_current;
-	DrawLine2D(dx, dy);
+	DrawLine2D(x_current, y_current, dx, dy);
 	x_current = dx;
 	y_current = dy;
 }
@@ -1106,23 +1105,31 @@ void ClipPolygon(float_polygon_type poly, float_polygon_type &poly_out)
 
 }
 
+void DrawPoly(polygon_type &polygon) {
+	for (int i = 0; i < polygon.n; i++){
+		DrawLine(polygon.vertex[i].x, polygon.vertex[i].y, polygon.vertex[(i + 1) % polygon.n].x, polygon.vertex[(i + 1) % polygon.n].y);
+	}
+}
+
 void DrawPolygon(float_polygon_type poly)
 {
-	/*float_polygon_type poly_out;
-	for (int i = 0; i < poly.n; i++) // Transformação do usuário
+	float_polygon_type poly_out;
+	//for (int i = 0; i < poly.n; i++) // Transformação do usuário
 	//<Matriz>.DoTransformatio(poly.vertex[i].x, poly.vertex[i].y)
-	//Call Polygon Clipping // recorte do poligono
+	ClipPolygon(poly, poly_out);
 	if (poly_out.n > 0) // resultou em poligono dentro
 	{
-	for (i = 0; i < poly_out.n; i++) // transformacao de janelamento
-	{
-	//ViewingTransform(<poly _out.vertex[i].x>, <pol _out.vertex[i].y>);
-	//Normalizado Para Dispositivo(<poly_out.vertex[i].x>, <poly_out.vertex[i].y>);
+		polygon_type device_poly;
+		device_poly.n = poly_out.n;
+		for (int i = 0; i < poly_out.n; i++) // transformacao de janelamento
+		{
+			ViewingTransformation(&poly_out.vertex[i].x, &poly_out.vertex[i].y);
+			NormalizedToDevice(poly_out.vertex[i].x, poly_out.vertex[i].y, &device_poly.vertex[i].x, &device_poly.vertex[i].y);
+		}
+		DrawPoly(device_poly); // desenha
+		//if (fill_polygon)
+		//	FillPolygon(poly_out); // preenche poligono
 	}
-	if (fill_polygon)
-	FillPolygon(poly_out); // preenche poligono
-	else DrawPolyg(poly_out); // desenha
-	}*/
 }
 
 /////////////////////////////////////////////////////////////////////////
