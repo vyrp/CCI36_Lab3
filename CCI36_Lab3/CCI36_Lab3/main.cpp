@@ -647,7 +647,7 @@ bool Empty(int x, int y)
 }
 
 
-void InsertVertex(float_polygon_type &poly, int x, int y)
+void InsertVertex(float_polygon_type &poly, float x, float y)
 {	// insert x,y as the last element
 	if (poly.n < MAX_POLY)
 	{
@@ -923,13 +923,12 @@ bool Clip2D(float *x1, float *y1, float *x2, float *y2)
 }
 
 
-void DrawLine2D(float x2, float y2)
+void DrawLine2D(float x1, float y1, float x2, float y2)
 {
-	float x1, y1;
 	int xi1, yi1, xi2, yi2;
+	//x1 = x_current;
+	//y1 = y_current;
 
-	x1 = x_current;
-	y1 = y_current;
 
 	//TO DO <MATRIZ>.DoTransformation(&x1, &y1);
 	//TO DO  Faça Transformacao x2 y2
@@ -946,7 +945,7 @@ void DrawLine2D(float x2, float y2)
 
 void LineAbs2D(float x, float y)
 {
-	DrawLine2D(x, y);
+	DrawLine2D(x_current, y_current, x, y);
 	x_current = x;
 	y_current = y;
 }
@@ -956,7 +955,7 @@ void LineRel2D(float dx, float dy)
 {
 	dx += x_current;
 	dy += y_current;
-	DrawLine2D(dx, dy);
+	DrawLine2D(x_current, y_current, dx, dy);
 	x_current = dx;
 	y_current = dy;
 }
@@ -1014,7 +1013,7 @@ float_point_type Intersection(float_point_type P1, float_point_type P2,
 		p.x = wxh;
 		p.y = (P1.y + ((float)(P2.y - P1.y)) / (P2.x - P1.x)*(p.x - P1.x));
 		break;
-	case TOP: 
+	case TOP:
 		p.y = wyh;
 		p.x = (P1.x + ((float)(P2.x - P1.x)) / (P2.y - P1.y)*(p.y - P1.y));
 		break;
@@ -1056,195 +1055,203 @@ void ClipPolygon(float_polygon_type poly, float_polygon_type &poly_out)
 
 }
 
+void DrawPoly(polygon_type &polygon) {
+	for (int i = 0; i < polygon.n; i++){
+		DrawLine(polygon.vertex[i].x, polygon.vertex[i].y, polygon.vertex[(i + 1) % polygon.n].x, polygon.vertex[(i + 1) % polygon.n].y);
+	}
+}
+
 void DrawPolygon(float_polygon_type poly)
 {
-	/*float_polygon_type poly_out;
-	for (int i = 0; i < poly.n; i++) // Transformação do usuário
-		//<Matriz>.DoTransformatio(poly.vertex[i].x, poly.vertex[i].y)
-		//Call Polygon Clipping // recorte do poligono
-		if (poly_out.n > 0) // resultou em poligono dentro
+	float_polygon_type poly_out;
+	//for (int i = 0; i < poly.n; i++) // Transformação do usuário
+	//<Matriz>.DoTransformatio(poly.vertex[i].x, poly.vertex[i].y)
+	ClipPolygon(poly, poly_out);
+	if (poly_out.n > 0) // resultou em poligono dentro
+	{
+		polygon_type device_poly;
+		device_poly.n = poly_out.n;
+		for (int i = 0; i < poly_out.n; i++) // transformacao de janelamento
 		{
-		for (i = 0; i < poly_out.n; i++) // transformacao de janelamento
-		{
-			//ViewingTransform(<poly _out.vertex[i].x>, <pol _out.vertex[i].y>);
-			//Normalizado Para Dispositivo(<poly_out.vertex[i].x>, <poly_out.vertex[i].y>);
+			ViewingTransformation(&poly_out.vertex[i].x, &poly_out.vertex[i].y);
+			NormalizedToDevice(poly_out.vertex[i].x, poly_out.vertex[i].y, &device_poly.vertex[i].x, &device_poly.vertex[i].y);
 		}
-		if (fill_polygon)
-			FillPolygon(poly_out); // preenche poligono
-		else DrawPolyg(poly_out); // desenha
-		}*/
+		DrawPoly(device_poly); // desenha
+		//if (fill_polygon)
+		//	FillPolygon(poly_out); // preenche poligono
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////
 
 void main()
 {
-//	Shape shape = Line;
-//	SetGraphicsColor(color, 1);
-//
-//	InitGraf();
-//
-//	int p0_x, p0_y, p1_x, p1_y, x_1, y_1, x_2, y_2;
-//	int r = 0, menu_it = 0;
-//	polygon_type polygon;
-//	polygon.n = 0;
-//
-//	InitGraphics();
-//
-//	menu_item = 0;
-//	//CheckMenuItem(menu_color, 1, MF_CHECKED);
-//	CheckMenuItem(menu_draw, 21, MF_CHECKED);
-//	//CheckMenuItem(menu_pattern, 100 + pattern_max, MF_CHECKED);
-//	//CheckMenuItem(menu_algorithm, 200, MF_CHECKED);
-//
-//	current_pattern = pattern_max;
-//	algorithmType = LINE_SCAN;
-//
-//	while (key_input != ESC)						// ESC exits the program
-//	{
-//		CheckGraphicsMsg();
-//
-//		if (menu_it != menu_item)
-//
-//			/*if (menu_item >= 200){
-//				for (int i = 0; i <= 2; i++)
-//				CheckMenuItem(menu_algorithm, 200 + i, MF_UNCHECKED);
-//
-//				CheckMenuItem(menu_algorithm, menu_item, MF_CHECKED);
-//				if (menu_item >= 200 && menu_item <= 202){
-//				algorithmType = menu_item - 200;
-//				}
-//
-//				menu_it = menu_item;
-//
-//				}*/
-//				/*else if (menu_item >= 100){
-//					for (int i = 0; i <= pattern_max; i++)
-//					CheckMenuItem(menu_pattern, 100 + i, MF_UNCHECKED);
-//
-//					CheckMenuItem(menu_pattern, menu_item, MF_CHECKED);
-//					if (menu_item >= 100 && menu_item <= 100 + pattern_max)
-//					current_pattern = menu_item - 100;
-//					menu_it = menu_item;
-//					}*/
-//					//			else {
-//					switch (menu_item){
-//					case 21:
-//						CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
-//						CheckMenuItem(menu_draw, 21, MF_CHECKED);
-//						menu_it = menu_item;
-//						shape = Line;
-//						break;
-//					case 22:
-//						CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
-//						CheckMenuItem(menu_draw, 22, MF_CHECKED);
-//						menu_it = menu_item;
-//						shape = Circle;
-//						break;
-//						/*default:
-//							int i;
-//							for (i = 1; i <= 16; i++)
-//							CheckMenuItem(menu_color, i, MF_UNCHECKED);
-//							CheckMenuItem(menu_color, menu_item, MF_CHECKED);
-//							if (menu_item >= 1 && menu_item <= 16)
-//							color = menu_item - 1;
-//
-//							menu_it = menu_item;*/
-//		}
-//
-//		//		}
-//
-//		if (mouse_action == L_MOUSE_DOWN)
-//		{
-//			// Pick first point up 
-//			if (shape == Line){
-//				if (polygon.n == 0)
-//				{
-//					p0_x = p1_x = mouse_x;
-//					p0_y = p1_y = mouse_y;
-//					InsertVertex(polygon, p0_x, p0_y);
-//				}
-//			}
-//			if (shape == Circle){
-//				p0_x = p1_x = mouse_x;
-//				p0_y = p1_y = mouse_y;
-//				r = 0;
-//			}
-//		}
-//		if (mouse_action == L_MOUSE_MOVE_DOWN)
-//		{
-//			// Example of elastic line
-//			if (p1_x != mouse_x || p1_y != mouse_y)
-//			{
-//				// Erase previous line. NOTE: using XOR line
-//				if (shape == Line) {
-//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-//				}
-//				if (shape == Circle) {
-//					CircleBresenham(p0_x, p0_y, r);
-//				}
-//
-//				p1_x = mouse_x;
-//				p1_y = mouse_y;
-//
-//				// Draw new line
-//				if (shape == Line) {
-//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-//				}
-//				if (shape == Circle) {
-//					r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
-//					CircleBresenham(p0_x, p0_y, r);
-//				}
-//
-//				x_1 = p0_x;
-//				y_1 = p0_y;
-//				x_2 = p1_x;
-//				y_2 = p1_y;
-//			}
-//		}
-//		else  if (mouse_action == L_MOUSE_UP)
-//		{
-//			if (shape == Line) {
-//				DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-//				DrawLine(p0_x, p0_y, p1_x, p1_y);
-//				p0_x = p1_x = mouse_x;
-//				p0_y = p1_y = mouse_y;
-//
-//				if (polygon.n > 0 &&
-//					(polygon.vertex[polygon.n - 1].x != p0_x
-//					|| polygon.vertex[polygon.n - 1].y != p0_y))
-//					InsertVertex(polygon, p0_x, p0_y);
-//			}
-//			if (shape == Circle) {
-//				DrawCircle(p0_x, p0_y, r);
-//			}
-//			mouse_action = NO_ACTION;
-//		}
-//		else  if (mouse_action == R_MOUSE_DOWN)
-//		{
-//			if (shape == Line){
-//				if (polygon.n != 0){
-//					DrawPoly(polygon);
-//					/*if (algorithmType == LINE_SCAN) {
-//						edge_list_type list;
-//						FillPolygon(polygon, list);
-//						}
-//						else if (algorithmType == FLOOD_FILL_RECURSIVE){
-//						FloodFillRecursive(polygon);
-//						}
-//						else {
-//						FloodFill(polygon);
-//						}*/
-//					polygon.n = 0;
-//				}
-//			}
-//			if (shape == Circle) {
-//				// FloodFillNotRecCircle(p0_x, p0_y, r);
-//			}
-//
-//			mouse_action = NO_ACTION;
-//		}
-//	}
-//
-//	CloseGraphics();
+	//	Shape shape = Line;
+	//	SetGraphicsColor(color, 1);
+	//
+	//	InitGraf();
+	//
+	//	int p0_x, p0_y, p1_x, p1_y, x_1, y_1, x_2, y_2;
+	//	int r = 0, menu_it = 0;
+	//	polygon_type polygon;
+	//	polygon.n = 0;
+	//
+	//	InitGraphics();
+	//
+	//	menu_item = 0;
+	//	//CheckMenuItem(menu_color, 1, MF_CHECKED);
+	//	CheckMenuItem(menu_draw, 21, MF_CHECKED);
+	//	//CheckMenuItem(menu_pattern, 100 + pattern_max, MF_CHECKED);
+	//	//CheckMenuItem(menu_algorithm, 200, MF_CHECKED);
+	//
+	//	current_pattern = pattern_max;
+	//	algorithmType = LINE_SCAN;
+	//
+	//	while (key_input != ESC)						// ESC exits the program
+	//	{
+	//		CheckGraphicsMsg();
+	//
+	//		if (menu_it != menu_item)
+	//
+	//			/*if (menu_item >= 200){
+	//				for (int i = 0; i <= 2; i++)
+	//				CheckMenuItem(menu_algorithm, 200 + i, MF_UNCHECKED);
+	//
+	//				CheckMenuItem(menu_algorithm, menu_item, MF_CHECKED);
+	//				if (menu_item >= 200 && menu_item <= 202){
+	//				algorithmType = menu_item - 200;
+	//				}
+	//
+	//				menu_it = menu_item;
+	//
+	//				}*/
+	//				/*else if (menu_item >= 100){
+	//					for (int i = 0; i <= pattern_max; i++)
+	//					CheckMenuItem(menu_pattern, 100 + i, MF_UNCHECKED);
+	//
+	//					CheckMenuItem(menu_pattern, menu_item, MF_CHECKED);
+	//					if (menu_item >= 100 && menu_item <= 100 + pattern_max)
+	//					current_pattern = menu_item - 100;
+	//					menu_it = menu_item;
+	//					}*/
+	//					//			else {
+	//					switch (menu_item){
+	//					case 21:
+	//						CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
+	//						CheckMenuItem(menu_draw, 21, MF_CHECKED);
+	//						menu_it = menu_item;
+	//						shape = Line;
+	//						break;
+	//					case 22:
+	//						CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
+	//						CheckMenuItem(menu_draw, 22, MF_CHECKED);
+	//						menu_it = menu_item;
+	//						shape = Circle;
+	//						break;
+	//						/*default:
+	//							int i;
+	//							for (i = 1; i <= 16; i++)
+	//							CheckMenuItem(menu_color, i, MF_UNCHECKED);
+	//							CheckMenuItem(menu_color, menu_item, MF_CHECKED);
+	//							if (menu_item >= 1 && menu_item <= 16)
+	//							color = menu_item - 1;
+	//
+	//							menu_it = menu_item;*/
+	//		}
+	//
+	//		//		}
+	//
+	//		if (mouse_action == L_MOUSE_DOWN)
+	//		{
+	//			// Pick first point up 
+	//			if (shape == Line){
+	//				if (polygon.n == 0)
+	//				{
+	//					p0_x = p1_x = mouse_x;
+	//					p0_y = p1_y = mouse_y;
+	//					InsertVertex(polygon, p0_x, p0_y);
+	//				}
+	//			}
+	//			if (shape == Circle){
+	//				p0_x = p1_x = mouse_x;
+	//				p0_y = p1_y = mouse_y;
+	//				r = 0;
+	//			}
+	//		}
+	//		if (mouse_action == L_MOUSE_MOVE_DOWN)
+	//		{
+	//			// Example of elastic line
+	//			if (p1_x != mouse_x || p1_y != mouse_y)
+	//			{
+	//				// Erase previous line. NOTE: using XOR line
+	//				if (shape == Line) {
+	//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+	//				}
+	//				if (shape == Circle) {
+	//					CircleBresenham(p0_x, p0_y, r);
+	//				}
+	//
+	//				p1_x = mouse_x;
+	//				p1_y = mouse_y;
+	//
+	//				// Draw new line
+	//				if (shape == Line) {
+	//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+	//				}
+	//				if (shape == Circle) {
+	//					r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
+	//					CircleBresenham(p0_x, p0_y, r);
+	//				}
+	//
+	//				x_1 = p0_x;
+	//				y_1 = p0_y;
+	//				x_2 = p1_x;
+	//				y_2 = p1_y;
+	//			}
+	//		}
+	//		else  if (mouse_action == L_MOUSE_UP)
+	//		{
+	//			if (shape == Line) {
+	//				DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+	//				DrawLine(p0_x, p0_y, p1_x, p1_y);
+	//				p0_x = p1_x = mouse_x;
+	//				p0_y = p1_y = mouse_y;
+	//
+	//				if (polygon.n > 0 &&
+	//					(polygon.vertex[polygon.n - 1].x != p0_x
+	//					|| polygon.vertex[polygon.n - 1].y != p0_y))
+	//					InsertVertex(polygon, p0_x, p0_y);
+	//			}
+	//			if (shape == Circle) {
+	//				DrawCircle(p0_x, p0_y, r);
+	//			}
+	//			mouse_action = NO_ACTION;
+	//		}
+	//		else  if (mouse_action == R_MOUSE_DOWN)
+	//		{
+	//			if (shape == Line){
+	//				if (polygon.n != 0){
+	//					DrawPoly(polygon);
+	//					/*if (algorithmType == LINE_SCAN) {
+	//						edge_list_type list;
+	//						FillPolygon(polygon, list);
+	//						}
+	//						else if (algorithmType == FLOOD_FILL_RECURSIVE){
+	//						FloodFillRecursive(polygon);
+	//						}
+	//						else {
+	//						FloodFill(polygon);
+	//						}*/
+	//					polygon.n = 0;
+	//				}
+	//			}
+	//			if (shape == Circle) {
+	//				// FloodFillNotRecCircle(p0_x, p0_y, r);
+	//			}
+	//
+	//			mouse_action = NO_ACTION;
+	//		}
+	//	}
+	//
+	//	CloseGraphics();
 }
