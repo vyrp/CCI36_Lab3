@@ -218,16 +218,16 @@ void DrawPixel(int x, int y, bool with_pattern)
 
 wchar_t wind_class[] = L"Window Application";
 
-HMENU menu, menu_draw, menu_color, menu_pattern, menu_algorithm;
+HMENU menu, menu_draw;//, menu_color, menu_pattern, menu_algorithm;
 
 void MenuBar()
 {
 
 	menu = CreateMenu();
 	menu_draw = CreatePopupMenu();
-	menu_color = CreatePopupMenu();
-	menu_pattern = CreatePopupMenu();
-	menu_algorithm = CreatePopupMenu();
+	//menu_color = CreatePopupMenu();
+	//menu_pattern = CreatePopupMenu();
+	//menu_algorithm = CreatePopupMenu();
 
 
 	AppendMenu(
@@ -237,7 +237,7 @@ void MenuBar()
 		(LPCTSTR)L"&Draw"		// menu-item content
 		);
 
-	AppendMenu(
+	/*AppendMenu(
 		menu,					// handle to menu to be changed
 		MF_POPUP,				// menu-item flags
 		(UINT)menu_pattern,		// menu-item identifier or handle to drop-down menu or submenu
@@ -251,13 +251,13 @@ void MenuBar()
 		MF_POPUP,				// menu-item flags
 		(UINT)menu_algorithm,	// menu-item identifier or handle to drop-down menu or submenu
 		(LPCTSTR)L"&Algorithm"	// menu-item content
-		);
+		);*/
 
-	InsertMenu(menu_draw, 0, MF_STRING, 21, (LPCTSTR)L"&Line");
+	InsertMenu(menu_draw, 0, MF_STRING, 21, (LPCTSTR)L"&Polygon");
 
 	AppendMenu(menu_draw, MF_STRING, 22, (LPCTSTR)L"&Circle");
 
-	InsertMenu(menu_color, 0, MF_STRING, 1, (LPCTSTR)L"Black");
+	/*InsertMenu(menu_color, 0, MF_STRING, 1, (LPCTSTR)L"Black");
 	AppendMenu(menu_color, MF_STRING, 2, (LPCTSTR)L"Blue");
 	AppendMenu(menu_color, MF_STRING, 3, (LPCTSTR)L"Green");
 	AppendMenu(menu_color, MF_STRING, 4, (LPCTSTR)L"Cyan");
@@ -285,7 +285,7 @@ void MenuBar()
 
 	InsertMenu(menu_algorithm, 0, MF_STRING, 200, (LPCTSTR)L"Scan Line");
 	AppendMenu(menu_algorithm, MF_STRING, 201, (LPCTSTR)L"Recursive Flood");
-	AppendMenu(menu_algorithm, MF_STRING, 202, (LPCTSTR)L"Flood");
+	AppendMenu(menu_algorithm, MF_STRING, 202, (LPCTSTR)L"Flood");*/
 }
 
 void InitGraphics()
@@ -591,6 +591,7 @@ void DrawXorPixel(int x, int y)
 	cor ^= mask; // bit-bit Xor operation mask with color
 	SetPixel(hdc, x, y, cor);
 }
+
 void DrawLineXor(int x1, int y1, int x2, int y2)
 {
 	int i, length; float  x, y, dx, dy;
@@ -647,6 +648,7 @@ bool Empty(int x, int y)
 
 }
 
+
 void InsertVertex(polygon_type &poly, int x, int y)
 {	// insert x,y as the last element
 	if (poly.n < MAX_POLY)
@@ -658,14 +660,14 @@ void InsertVertex(polygon_type &poly, int x, int y)
 
 }
 
-void GetPoint(polygon_type polygon, int k, int &x, int &y)
+/*void GetPoint(polygon_type polygon, int k, int &x, int &y)
 {
 	x = polygon.vertex[k].x;
 	y = polygon.vertex[k].y;
 
-}
+}*/
 
-void PolyInsert(edge_list_type &list, int x1, int y1, int x2, int y2)
+/*void PolyInsert(edge_list_type &list, int x1, int y1, int x2, int y2)
 {
 	// insert line segment in edge struct, if not horizontal
 	if (y1 != y2)
@@ -693,9 +695,9 @@ void PolyInsert(edge_list_type &list, int x1, int y1, int x2, int y2)
 		list.n++;
 	}
 
-}
+}*/
 
-void LoadPolygon(polygon_type &polygon, edge_list_type &list, int &num_Edges)
+/*void LoadPolygon(polygon_type &polygon, edge_list_type &list, int &num_Edges)
 {
 	int x1, x2, y1, y2, k = 0;
 
@@ -825,8 +827,9 @@ void FillPolygon(polygon_type &polygon, edge_list_type &list)
 		UpdateXValues(list, end_Edge, start_Edge, scan);
 		Include(list, end_Edge, Edges, scan);
 	}
-}
+}*/
 
+/*
 // stack of points to be used during the DFS
 struct point_stack {
 	static const int KMAX = 500000;
@@ -860,9 +863,9 @@ void FloodFillRec(int x, int y)
 		if (Empty(x, y - 1))
 			FloodFillRec(x, y - 1);
 	}
-}
+}*/
 
-void FloodFillRecursive(polygon_type poly)
+/*void FloodFillRecursive(polygon_type poly)
 {
 	int x_seed = 0, y_seed = 0;
 	for (int i = 0; i < poly.n; i++)
@@ -873,9 +876,9 @@ void FloodFillRecursive(polygon_type poly)
 	x_seed /= poly.n;
 	y_seed /= poly.n;
 	FloodFillRec(x_seed, y_seed);
-}
+}*/
 
-bool visited[1000][1000]; // matrix telling witch points have been visited (it could be a bit array)
+/*bool visited[1000][1000]; // matrix telling witch points have been visited (it could be a bit array)
 point_stack s;
 
 void FloodFillNotRec(int x, int y)
@@ -903,9 +906,9 @@ void FloodFillNotRec(int x, int y)
 		}
 
 	}
-}
+}*/
 
-void FloodFillNotRecCircle(int x, int y, int r)
+/*void FloodFillNotRecCircle(int x, int y, int r)
 {
 	memset(visited, 0, sizeof(visited)); // initialize visited matrix
 	point_type p;
@@ -930,9 +933,9 @@ void FloodFillNotRecCircle(int x, int y, int r)
 		}
 
 	}
-}
+}*/
 
-
+/*
 void FloodFill(polygon_type poly) {
 	int x_center = 10000, y_center = 0; // y_center will be the center for the y's of the vertexes
 	// x_center is initially the minimum
@@ -967,6 +970,7 @@ void FloodFill(polygon_type poly) {
 
 	FloodFillNotRec(x_seed, y_seed);
 }
+*/
 
 void PlotCircle(int xc, int yc, int x, int y)
 {
@@ -1069,10 +1073,10 @@ void main()
 	InitGraphics();
 
 	menu_item = 0;
-	CheckMenuItem(menu_color, 1, MF_CHECKED);
+	//CheckMenuItem(menu_color, 1, MF_CHECKED);
 	CheckMenuItem(menu_draw, 21, MF_CHECKED);
-	CheckMenuItem(menu_pattern, 100 + pattern_max, MF_CHECKED);
-	CheckMenuItem(menu_algorithm, 200, MF_CHECKED);
+	//CheckMenuItem(menu_pattern, 100 + pattern_max, MF_CHECKED);
+	//CheckMenuItem(menu_algorithm, 200, MF_CHECKED);
 
 	current_pattern = pattern_max;
 	algorithmType = LINE_SCAN;
@@ -1083,7 +1087,7 @@ void main()
 
 		if (menu_it != menu_item)
 
-			if (menu_item >= 200){
+			/*if (menu_item >= 200){
 				for (int i = 0; i <= 2; i++)
 					CheckMenuItem(menu_algorithm, 200 + i, MF_UNCHECKED);
 
@@ -1094,8 +1098,8 @@ void main()
 					
 				menu_it = menu_item;
 
-			}
-			else if (menu_item >= 100){
+			}*/
+			/*else if (menu_item >= 100){
 				for (int i = 0; i <= pattern_max; i++)
 					CheckMenuItem(menu_pattern, 100 + i, MF_UNCHECKED);
 				
@@ -1103,9 +1107,8 @@ void main()
 				if (menu_item >= 100 && menu_item <= 100 + pattern_max)
 					current_pattern = menu_item - 100;
 				menu_it = menu_item;
-
-			}
-			else {
+			}*/
+//			else {
 				switch (menu_item){
 					case 21:
 						CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
@@ -1119,7 +1122,7 @@ void main()
 						menu_it = menu_item;
 						shape = Circle;
 						break;
-					default:
+					/*default:
 						int i;
 						for (i = 1; i <= 16; i++)
 							CheckMenuItem(menu_color, i, MF_UNCHECKED);
@@ -1127,10 +1130,10 @@ void main()
 						if (menu_item >= 1 && menu_item <= 16)
 							color = menu_item - 1;
 
-						menu_it = menu_item;
+						menu_it = menu_item;*/
 				}
 
-			}
+	//		}
 
 			if (mouse_action == L_MOUSE_DOWN)
 			{
@@ -1203,7 +1206,7 @@ void main()
 				if (shape == Line){
 					if (polygon.n != 0){
 						DrawPoly(polygon);
-						if (algorithmType == LINE_SCAN) {
+						/*if (algorithmType == LINE_SCAN) {
 							edge_list_type list;
 							FillPolygon(polygon, list);
 						}
@@ -1212,45 +1215,15 @@ void main()
 						}
 						else {
 							FloodFill(polygon);
-						}
+						}*/
 						polygon.n = 0;
 					}
 				}
 				if (shape == Circle) {
-					FloodFillNotRecCircle(p0_x, p0_y, r);
+					// FloodFillNotRecCircle(p0_x, p0_y, r);
 				}
 
 				mouse_action = NO_ACTION;
-			}
-
-			// Identify Enter
-			if (key_input == ENTER)
-			{
-				switch (buffer[0])
-				{
-				case 's': // Set to scanline algorithm
-					algorithmType = LINE_SCAN;
-					break;
-				case 'r': // Set to recursive flood fill algorithm
-					algorithmType = FLOOD_FILL_RECURSIVE;
-					break;
-				case 'f': // Set to flood fill algorithm
-					algorithmType = FLOOD_FILL;
-					break;
-				case 'o': // Set shape to circle.
-					shape = Circle;
-					break;
-				case 'l': // Set shape to line.
-					shape = Line;
-					break;
-				case 'p':
-					if (buffer[2] - '0' < pattern_max && buffer[2] - '0' >= 0){
-						current_pattern = buffer[2] - '0';
-					}
-					break;
-				}
-				ClearString(buffer);
-				key_input = NO_ACTION;
 			}
 	}
 
