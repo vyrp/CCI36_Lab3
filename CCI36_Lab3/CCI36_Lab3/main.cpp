@@ -51,42 +51,42 @@ static BOOL graphics = TRUE;            // Boolean, enable graphics?
 
 const int pattern_max = 5;
 char pattern[pattern_max][6][7] = {
-	{
-		"rrorrr",
-		"rrorrr",
-		"oooooo",
-		"rrorrr",
-		"rrorrr",
-		"oooooo"
-	}, {
-		"bbbbbb",
-		"rrrrrr",
-		"wwwwww",
-		"mmmmmm",
-		"oooooo",
-		"wwwwww"
-	}, {
-		"rwwwwr",
-		"rrwwrr",
-		"rrwwrr",
-		"rwwwwr",
-		"wwwwww",
-		"wwwwww"
-	}, {
-		"bbbbbb",
-		"bbbbbb",
-		"brrbrr",
-		"brrrrr",
-		"bbrrrb",
-		"bbbrbb"
-	}, {
-		"wwwrww",
-		"wrwwwr",
-		"wwwrww",
-		"wrwwwr",
-		"wwwrww",
-		"wrwwwr"
-	}
+		{
+			"rrorrr",
+			"rrorrr",
+			"oooooo",
+			"rrorrr",
+			"rrorrr",
+			"oooooo"
+		}, {
+			"bbbbbb",
+			"rrrrrr",
+			"wwwwww",
+			"mmmmmm",
+			"oooooo",
+			"wwwwww"
+		}, {
+			"rwwwwr",
+			"rrwwrr",
+			"rrwwrr",
+			"rwwwwr",
+			"wwwwww",
+			"wwwwww"
+		}, {
+			"bbbbbb",
+			"bbbbbb",
+			"brrbrr",
+			"brrrrr",
+			"bbrrrb",
+			"bbbrbb"
+		}, {
+			"wwwrww",
+			"wrwwwr",
+			"wwwrww",
+			"wrwwwr",
+			"wwwrww",
+			"wrwwwr"
+		}
 };
 
 int current_pattern; // chosen pattern from the list above (if pattern_max then it is no pattern)
@@ -245,9 +245,9 @@ void MenuBar()
 		(LPCTSTR)L"&Pattern"	// menu-item content
 		);
 
-	AppendMenu(menu, MF_POPUP, (UINT)menu_color, (LPCTSTR)L"&Color");
+		AppendMenu(menu, MF_POPUP, (UINT)menu_color, (LPCTSTR)L"&Color");
 
-	AppendMenu(
+		AppendMenu(
 		menu,					// handle to menu to be changed
 		MF_POPUP,				// menu-item flags
 		(UINT)menu_algorithm,	// menu-item identifier or handle to drop-down menu or submenu
@@ -295,7 +295,7 @@ void InitGraphics()
 	HWND hWnd;
 	WNDCLASS wc;
 	LPCWSTR window_class = (LPCWSTR)wind_class;
-	
+
 	// Fill up window structure
 	wc.lpszClassName = window_class;			// registration name
 	wc.hInstance = hInst;						// application instance
@@ -330,7 +330,7 @@ void InitGraphics()
 		(HMENU)menu,						// handle to menu
 		(HINSTANCE)hInst,					// handle to application instance
 		(LPVOID)NULL);						// pointer to window-creation data
-	
+
 	if ((hWnd == NULL))
 	{
 		printf("Error in CreateWindow ...\n ");
@@ -637,11 +637,6 @@ void DrawLine(int x1, int y1, int x2, int y2)
 /**********************************************
 * Draws the polygon to guarantee closure.
 ***********************************************/
-void DrawPoly(polygon_type &polygon) {
-	for (int i = 0; i < polygon.n; i++){
-		DrawLine(polygon.vertex[i].x, polygon.vertex[i].y, polygon.vertex[(i + 1) % polygon.n].x, polygon.vertex[(i + 1) % polygon.n].y);
-	}
-}
 
 bool Empty(int x, int y)
 {
@@ -650,7 +645,7 @@ bool Empty(int x, int y)
 }
 
 
-void InsertVertex(polygon_type &poly, int x, int y)
+void InsertVertex(float_polygon_type &poly, int x, int y)
 {	// insert x,y as the last element
 	if (poly.n < MAX_POLY)
 	{
@@ -660,318 +655,6 @@ void InsertVertex(polygon_type &poly, int x, int y)
 	}
 
 }
-
-/*void GetPoint(polygon_type polygon, int k, int &x, int &y)
-{
-	x = polygon.vertex[k].x;
-	y = polygon.vertex[k].y;
-
-}*/
-
-/*void PolyInsert(edge_list_type &list, int x1, int y1, int x2, int y2)
-{
-	// insert line segment in edge struct, if not horizontal
-	if (y1 != y2)
-	{
-		int YM = Max(y1, y2), J1 = list.n + 1;
-
-		while (J1 != 1 && list.edge[J1 - 1].Ymax < YM)
-		{
-			list.edge[J1] = list.edge[J1 - 1];
-			J1--;
-		}
-
-		list.edge[J1].Ymax = YM;
-		list.edge[J1].dx = -1 * (float)(x2 - x1) / (y2 - y1);
-		if (y1 > y2)
-		{
-			list.edge[J1].Ymin = y2;
-			list.edge[J1].Xinter = (float)x1;
-		}
-		else {
-			list.edge[J1].Ymin = y1;
-			list.edge[J1].Xinter = (float)x2;
-		}
-
-		list.n++;
-	}
-
-}*/
-
-/*void LoadPolygon(polygon_type &polygon, edge_list_type &list, int &num_Edges)
-{
-	int x1, x2, y1, y2, k = 0;
-
-	list.n = 0;
-	GetPoint(polygon, k, x1, y1);
-	num_Edges = 0;
-
-	for (; k <= polygon.n; k++)
-	{
-		GetPoint(polygon, k%polygon.n, x2, y2);
-		if (y1 == y2) x1 = x2;
-		else
-		{
-			PolyInsert(list, x1, y1, x2, y2);
-			num_Edges += 1;
-			x1 = x2;
-			y1 = y2;
-		}
-	}
-
-}
-
-
-void Include(edge_list_type &list, int &end_Edge, int final_Edge, int scan)
-{
-	// include all edges that intersept y_scan
-	while (end_Edge < final_Edge && list.edge[end_Edge + 1].Ymax >= scan)
-	{
-		end_Edge++;
-	}
-}
-
-void XSort(edge_list_type &list, int start_Edge, int last_Edge)
-{
-	int L, k; bool sorted = false;
-	edge_type temp;
-
-	// Use bubble sort
-
-	for (k = start_Edge; k < last_Edge; k++)
-	{
-
-		L = k + 1;
-
-		while (L > start_Edge &&
-			list.edge[L].Xinter < list.edge[L - 1].Xinter)
-		{
-			temp = list.edge[L];
-			list.edge[L] = list.edge[L - 1];
-			list.edge[L - 1] = temp;
-			L--;
-
-		}
-
-	}
-
-}
-
-void FillIn(int x1, int x2, int y)
-{
-	if (x1 != x2)
-	{
-		for (int x = x1; x <= x2; x++)
-		{
-			DrawPixel(x, y, true);
-
-		}
-	}
-}
-
-void FillScan(edge_list_type &list, int end_Edge, int start_Edge, int scan)
-{
-	int NX, J, K;
-
-
-	NX = (end_Edge - start_Edge + 1) / 2;
-
-	J = start_Edge;
-
-
-	for (K = 1; K <= NX; K++)
-	{
-		FillIn((int)list.edge[J].Xinter,
-			(int)list.edge[J + 1].Xinter, scan);
-		J += 2;
-	}
-
-}
-
-void UpdateXValues(edge_list_type &list, int last_Edge, int &start_Edge, int scan)
-{
-	int K1;
-
-	for (K1 = start_Edge; K1 <= last_Edge; K1++)
-	{
-		if (list.edge[K1].Ymin < scan)
-		{
-			list.edge[K1].Xinter += list.edge[K1].dx;
-		}
-		else
-		{
-			// remove edge
-			start_Edge++;
-			if (start_Edge <= K1)
-				for (int i = K1; i >= start_Edge; i--)
-					list.edge[i] = list.edge[i - 1];
-		}
-	}
-}
-
-void FillPolygon(polygon_type &polygon, edge_list_type &list)
-{
-	int Edges, start_Edge, end_Edge, scan;
-
-	LoadPolygon(polygon, list, Edges);
-	if (Edges == 2) return;
-	scan = list.edge[1].Ymax;
-	start_Edge = 1;
-	end_Edge = 1;
-
-	Include(list, end_Edge, Edges, scan);
-	while (end_Edge != start_Edge - 1)
-	{
-		XSort(list, start_Edge, end_Edge);
-		FillScan(list, end_Edge, start_Edge, scan);
-		scan--;
-		UpdateXValues(list, end_Edge, start_Edge, scan);
-		Include(list, end_Edge, Edges, scan);
-	}
-}*/
-
-/*
-// stack of points to be used during the DFS
-struct point_stack {
-	static const int KMAX = 500000;
-	point_type v[KMAX];
-	int n = 0;
-
-	void push(point_type p) { // inserts a point
-		v[n++] = p;
-	}
-
-	bool empty() { // checks weather it's empty
-		return n == 0;
-	}
-	point_type pop() { // removes top point
-		return v[--n];
-	}
-};
-
-void FloodFillRec(int x, int y)
-{
-	if (Empty(x, y))
-	{
-		DrawPixel(x, y, true);
-
-		if (Empty(x + 1, y))
-			FloodFillRec(x + 1, y);
-		if (Empty(x - 1, y))
-			FloodFillRec(x - 1, y);
-		if (Empty(x, y + 1))
-			FloodFillRec(x, y + 1);
-		if (Empty(x, y - 1))
-			FloodFillRec(x, y - 1);
-	}
-}*/
-
-/*void FloodFillRecursive(polygon_type poly)
-{
-	int x_seed = 0, y_seed = 0;
-	for (int i = 0; i < poly.n; i++)
-	{
-		x_seed += poly.vertex[i].x;
-		y_seed += poly.vertex[i].y;
-	}
-	x_seed /= poly.n;
-	y_seed /= poly.n;
-	FloodFillRec(x_seed, y_seed);
-}*/
-
-/*bool visited[1000][1000]; // matrix telling witch points have been visited (it could be a bit array)
-point_stack s;
-
-void FloodFillNotRec(int x, int y)
-{
-	memset(visited, 0, sizeof(visited)); // initializes the visited matrix
-	point_type p;
-	int dx[] = { 0, 1, -1, 0 };
-	int dy[] = { 1, 0, 0, -1 };
-	p.x = x;
-	p.y = y;
-	visited[x][y] = true;
-	s.push(p); // inserts seed in the stack
-	while (!s.empty()) {
-		p = s.pop(); // remove the first point from the stack
-		DrawPixel(p.x, p.y, true);
-		for (int i = 0; i < 4; i++) { // iterates through the neighboors
-			point_type p1;
-			p1.x = p.x + dx[i];
-			p1.y = p.y + dy[i];
-			if (p1.x < 0 || p1.x>1000 || p1.y < 0 || p1.y>1000) continue; // check bound cases
-			if (!visited[p1.x][p1.y] && Empty(p1.x, p1.y)){ // if not visited and empty visit
-				visited[p1.x][p1.y] = true;
-				s.push(p1); // insert neighboor in the stack
-			}
-		}
-
-	}
-}*/
-
-/*void FloodFillNotRecCircle(int x, int y, int r)
-{
-	memset(visited, 0, sizeof(visited)); // initialize visited matrix
-	point_type p;
-	int dx[] = { 0, 1, -1, 0 };
-	int dy[] = { 1, 0, 0, -1 };
-	p.x = x;
-	p.y = y;
-	visited[x][y] = true;
-	s.push(p); // push seed into the stack
-	while (!s.empty()) {
-		p = s.pop(); // remove point from stack
-		DrawPixel(p.x, p.y, true);
-		for (int i = 0; i < 4; i++) { // iterate over neighboors
-			point_type p1;
-			p1.x = p.x + dx[i];
-			p1.y = p.y + dy[i];
-			if (p1.x < 0 || p1.x>1000 || p1.y < 0 || p1.y>1000) continue; // bound cases
-			if (!visited[p1.x][p1.y] && (p1.x - x)*(p1.x - x) + (p1.y - y)*(p1.y - y) < r*r){ // if not visited and inside circle, visit
-				visited[p1.x][p1.y] = true;
-				s.push(p1); // insert neighboor into stack
-			}
-		}
-
-	}
-}*/
-
-/*
-void FloodFill(polygon_type poly) {
-	int x_center = 10000, y_center = 0; // y_center will be the center for the y's of the vertexes
-	// x_center is initially the minimum
-	for (int i = 0; i < poly.n; i++)
-	{
-		x_center = min(poly.vertex[i].x, x_center);
-		y_center += poly.vertex[i].y;
-	}
-	y_center /= poly.n;
-
-	int cont = 0;
-	int xs[MAX_POLY];
-	int at = 0;
-	for (int i = 1; i <= poly.n; i++) {
-		// check if the scan line crosses the edge from point i-1 to point i
-		if ((poly.vertex[i - 1].y < y_center && poly.vertex[i%poly.n].y > y_center) || (poly.vertex[i - 1].y > y_center && poly.vertex[i%poly.n].y < y_center)) {
-			xs[at++] = poly.vertex[i - 1].x + (1.0*(poly.vertex[i%poly.n].x - poly.vertex[i - 1].x)) / (poly.vertex[i%poly.n].y - poly.vertex[i - 1].y) * (y_center - poly.vertex[i - 1].y);
-		}
-	}
-	while (cont % 2 == 0){
-		cont = 0; // count how many interceptions with the edge from x_center, y_center
-		for (int i = 0; i < at; i++) {
-			 if(xs[i] < x_center) {
-				cont++;
-			}
-		}
-		x_center+= 1;
-	}
-	// x_center is inside polygon because it intercepts an odd number of edges from it to infinty
-	int x_seed = x_center; 
-	int y_seed = y_center;
-
-	FloodFillNotRec(x_seed, y_seed);
-}
-*/
 
 void PlotCircle(int xc, int yc, int x, int y)
 {
@@ -1114,174 +797,485 @@ std::list<Entity*> entities;
 
 ///////////////////////////////////////////////////////////////////////// Harry
 
+float x_start, x_end, y_start, y_end, heigth, width; /* screem bitmap size */
+
+float wxs = 0.0, wxh = 1.0, wys = 0.0, wyh = 1.0;  /* windows corners variables */
+
+float vxs = 0.0, vxh = 1.0, vys = 0.0, vyh = 1.0; /* viewport corners variables */
+
+float vwsx, vwsy; /* viewing transformation scale */
+
+
+
+int inside = 0, botton = 1, top = 2, right = 4, left = 8;
+float x_current, y_current;
+
+
+void SetWindow(float x1, float x2, float y1, float y2)
+/* window specification and scale transformation computation */
+{
+	wxs = x1;
+	wxh = x2;
+	wys = y1;
+	wyh = y2;
+	vwsx = (vxh - vxs) / (wxh - wxs);
+	vwsy = (vyh - vys) / (wyh - wys);
+}
+
+void SetViewport(float x1, float x2, float y1, float y2)
+/* Viewport specification and scale transformation computation */
+{
+	vxs = x1;
+	vxh = x2;
+	vys = y1;
+	vyh = y2;
+	vwsx = (vxh - vxs) / (wxh - wxs);
+	vwsy = (vyh - vys) / (wyh - wys);
+}
+void ViewingTransformation(float *x, float *y)
+/* transformation from object point to normalized point */
+{
+	*x = (*x - wxs)*vwsx + vxs;
+	*y = (*y - wys)*vwsy + vys;
+}
+
+void NormalizedToDevice(float xn, float yn, int *xd, int *yd)
+/* transformation from normalized point to device coordenate (its rounds the
+float number) */
+{
+	*xd = (int)(x_start + width*xn);
+	*yd = (int)(y_end - (y_start + heigth*yn));
+}
+
+
+void XYEdgeIntersection(float  *x1, float *x2, float *y1, float *y2,
+	float wy, float *x, float *y)
+{
+	*x = *x1 + (*x2 - *x1)*(wy - *y1) / (*y2 - *y1);
+	*y = wy;
+}
+
+void LineAbs2(float x2, float y2)
+{
+	float x1, y1;
+	int xi1, yi1, xi2, yi2;
+
+	x1 = x_current;
+	y1 = y_current;
+	x_current = x2;
+	y_current = y2;
+
+	ViewingTransformation(&x1, &y1);
+	ViewingTransformation(&x2, &y2);
+	NormalizedToDevice(x1, y1, &xi1, &yi1);
+	NormalizedToDevice(x2, y2, &xi2, &yi2);
+	DrawLine(xi1, yi1, xi2, yi2);
+
+}
+void MoveAbs2D(float x, float y)
+{
+	x_current = x;
+	y_current = y;
+}
+
+
+void MoveRel2D(float dx, float dy)
+{
+	x_current += dx;
+	y_current += dy;
+}
+void DrawLine2(float x1, float y1, float x2, float y2, int color)
+{
+	SetGraphicsColor(color, 2);
+	MoveAbs2D(x1, y1);
+	LineAbs2(x2, y2);
+
+}
+
+void SetCode2D(float *x, float *y, int *c)
+/* This procedure sets the point code */
+{
+	*c = inside;
+	if (*x < wxs)
+		*c |= left;
+	else if (*x > wxh)
+		*c |= right;
+	if (*y < wys)
+		*c |= botton;
+	else if (*y > wyh)
+		*c |= top;
+}
+
+bool Clip2D(float *x1, float *y1, float *x2, float *y2)
+{
+	int c, c1, c2;
+	float x, y;
+	SetCode2D(x1, y1, &c1);
+	SetCode2D(x2, y2, &c2);
+	while (((c1 != inside) || (c2 != inside)))
+	{
+		if ((c1&c2) != inside)
+		{
+
+			return(false);
+		}
+		else
+		{
+			c = c1;
+			if (c == inside)
+				c = c2;
+
+			if (left & c)
+				XYEdgeIntersection(y1, y2, x1, x2, wxs, &y, &x);
+			else if (right & c)
+				XYEdgeIntersection(y1, y2, x1, x2, wxh, &y, &x);
+			else if (botton & c)
+				XYEdgeIntersection(x1, x2, y1, y2, wys, &x, &y);
+			else if (top & c)
+				XYEdgeIntersection(x1, x2, y1, y2, wyh, &x, &y);
+			if (c == c1)
+			{
+
+				*x1 = x;
+				*y1 = y;
+
+				SetCode2D(x1, y1, &c1);
+			}
+			else
+			{
+				*x2 = x;
+				*y2 = y;
+
+				SetCode2D(x2, y2, &c2);
+			}
+		}
+	}
+	return(true);
+}
+
+
+void DrawLine2D(float x2, float y2)
+{
+	float x1, y1;
+	int xi1, yi1, xi2, yi2;
+
+	x1 = x_current;
+	y1 = y_current;
+
+	//TO DO <MATRIZ>.DoTransformation(&x1, &y1);
+	//TO DO  Faça Transformacao x2 y2
+
+	if (Clip2D(&x1, &y1, &x2, &y2))
+	{
+		ViewingTransformation(&x1, &y1);
+		ViewingTransformation(&x2, &y2);
+		NormalizedToDevice(x1, y1, &xi1, &yi1);
+		NormalizedToDevice(x2, y2, &xi2, &yi2);
+		DrawLine(xi1, yi1, xi2, yi2);
+	}
+}
+
+void LineAbs2D(float x, float y)
+{
+	DrawLine2D(x, y);
+	x_current = x;
+	y_current = y;
+}
+
+
+void LineRel2D(float dx, float dy)
+{
+	dx += x_current;
+	dy += y_current;
+	DrawLine2D(dx, dy);
+	x_current = dx;
+	y_current = dy;
+}
+
+void InitGraf()
+{
+	y_end = (float)GetMaxY();
+	x_end = (float)GetMaxX();
+
+	x_start = 0.0f;
+	y_start = 0.0f;
+	width = (float)(x_end - x_start);
+	heigth = (float)(y_end - y_start);
+	MoveAbs2D(0.0f, 0.0f);
+	SetViewport(0.0f, 1.0f, 0.0f, 1.0f);
+	SetWindow(0.0f, (float)x_end, 0.0f, (float)y_end);
+}
+
+typedef enum { LEFT, TOP, RIGHT, BOTTOM, LAST } win_edge_type;
+
+bool LineIntersectiom(float_point_type P1, float_point_type P2, win_edge_type edge)
+{
+	switch (edge)
+	{
+	case LEFT: return ((P1.x - wxs)*(P2.x - wxs) < 0);
+	case RIGHT: return ((P1.x - wxh)*(P2.x - wxh) < 0);
+	case TOP: return ((P1.y - wyh)*(P2.y - wyh) < 0);
+	case BOTTOM: return ((P1.y - wys)*(P2.y - wys) < 0);
+	}
+	return false;
+}
+bool Visible(float_point_type P, win_edge_type edge)
+{
+	switch (edge)
+	{
+
+	case LEFT: return (P.x >= wxs);
+	case RIGHT: return (P.x <= wxh);
+	case TOP: return (P.y <= wyh);
+	case BOTTOM: return (P.y >= wys);
+	}
+	return false;
+}
+float_point_type Intersection(float_point_type P1, float_point_type P2,
+	win_edge_type edge)
+{
+	float_point_type p;
+	switch (edge)
+	{
+	case LEFT:
+		p.x = wxs;
+		p.y = (P1.y + ((float)(P2.y - P1.y)) / (P2.x - P1.x)*(p.x - P1.x));
+		break;
+	case RIGHT:
+		p.x = wxh;
+		p.y = (P1.y + ((float)(P2.y - P1.y)) / (P2.x - P1.x)*(p.x - P1.x));
+		break;
+	case TOP: 
+		p.y = wyh;
+		p.x = (P1.x + ((float)(P2.x - P1.x)) / (P2.y - P1.y)*(p.y - P1.y));
+		break;
+	case BOTTOM:
+		p.y = wys;
+		p.x = (P1.x + ((float)(P2.x - P1.x)) / (P2.y - P1.y)*(p.y - P1.y));
+	}
+	return p;
+
+}
+void ClipEdge(float_point_type P1, float_point_type P2, win_edge_type edge,
+	float_polygon_type &poly_out)
+{
+	float_point_type Pi;
+	if (Visible(P1, edge)) // P is at the same side of window
+		InsertVertex(poly_out, P1.x, P1.y);
+	if (LineIntersectiom(P1, P2, edge))
+	{
+		Pi = Intersection(P1, P2, edge);
+		InsertVertex(poly_out, Pi.x, Pi.y);
+	}
+
+}
+void ClipPolygon(float_polygon_type poly, float_polygon_type &poly_out)
+{
+	win_edge_type edge;
+	for (int edg = 0; edg < 4; edg++)
+	{
+		poly_out.n = 0; // Reset poly_out	
+		edge = (win_edge_type)edg;
+		poly.vertex[poly.n] = poly.vertex[0];
+		for (int i = 0; i < poly.n; i++)
+			ClipEdge(poly.vertex[i], poly.vertex[i + 1], edge, poly_out);
+
+		poly = poly_out;// Copy poly_out to poly
+
+
+	}
+
+}
+
+void DrawPolygon(float_polygon_type poly)
+{
+	/*float_polygon_type poly_out;
+	for (int i = 0; i < poly.n; i++) // Transformação do usuário
+		//<Matriz>.DoTransformatio(poly.vertex[i].x, poly.vertex[i].y)
+		//Call Polygon Clipping // recorte do poligono
+		if (poly_out.n > 0) // resultou em poligono dentro
+		{
+		for (i = 0; i < poly_out.n; i++) // transformacao de janelamento
+		{
+			//ViewingTransform(<poly _out.vertex[i].x>, <pol _out.vertex[i].y>);
+			//Normalizado Para Dispositivo(<poly_out.vertex[i].x>, <poly_out.vertex[i].y>);
+		}
+		if (fill_polygon)
+			FillPolygon(poly_out); // preenche poligono
+		else DrawPolyg(poly_out); // desenha
+		}*/
+}
+
 /////////////////////////////////////////////////////////////////////////
 
 void main()
 {
-	Shape shape = Line;
-	SetGraphicsColor(color, 1);
-
-	int p0_x, p0_y, p1_x, p1_y, x_1, y_1, x_2, y_2;
-	int r = 0, menu_it = 0;
-	polygon_type polygon;
-	polygon.n = 0;
-
-	InitGraphics();
-
-	menu_item = 0;
-	//CheckMenuItem(menu_color, 1, MF_CHECKED);
-	CheckMenuItem(menu_draw, 21, MF_CHECKED);
-	//CheckMenuItem(menu_pattern, 100 + pattern_max, MF_CHECKED);
-	//CheckMenuItem(menu_algorithm, 200, MF_CHECKED);
-
-	current_pattern = pattern_max;
-	algorithmType = LINE_SCAN;
-
-	while (key_input != ESC)						// ESC exits the program
-	{
-		CheckGraphicsMsg();
-
-		if (menu_it != menu_item)
-
-			/*if (menu_item >= 200){
-				for (int i = 0; i <= 2; i++)
-					CheckMenuItem(menu_algorithm, 200 + i, MF_UNCHECKED);
-
-				CheckMenuItem(menu_algorithm, menu_item, MF_CHECKED);
-				if (menu_item >= 200 && menu_item <= 202){
-					algorithmType = menu_item - 200;
-				}
-					
-				menu_it = menu_item;
-
-			}*/
-			/*else if (menu_item >= 100){
-				for (int i = 0; i <= pattern_max; i++)
-					CheckMenuItem(menu_pattern, 100 + i, MF_UNCHECKED);
-				
-				CheckMenuItem(menu_pattern, menu_item, MF_CHECKED);
-				if (menu_item >= 100 && menu_item <= 100 + pattern_max)
-					current_pattern = menu_item - 100;
-				menu_it = menu_item;
-			}*/
-//			else {
-				switch (menu_item){
-					case 21:
-						CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
-						CheckMenuItem(menu_draw, 21, MF_CHECKED);
-						menu_it = menu_item;
-						shape = Line;
-						break;
-					case 22:
-						CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
-						CheckMenuItem(menu_draw, 22, MF_CHECKED);
-						menu_it = menu_item;
-						shape = Circle;
-						break;
-					/*default:
-						int i;
-						for (i = 1; i <= 16; i++)
-							CheckMenuItem(menu_color, i, MF_UNCHECKED);
-						CheckMenuItem(menu_color, menu_item, MF_CHECKED);
-						if (menu_item >= 1 && menu_item <= 16)
-							color = menu_item - 1;
-
-						menu_it = menu_item;*/
-				}
-
-	//		}
-
-			if (mouse_action == L_MOUSE_DOWN)
-			{
-				// Pick first point up 
-				if (shape == Line){
-					if (polygon.n == 0)
-					{
-						p0_x = p1_x = mouse_x;
-						p0_y = p1_y = mouse_y;
-						InsertVertex(polygon, p0_x, p0_y);
-					}
-				}
-				if (shape == Circle){
-					p0_x = p1_x = mouse_x;
-					p0_y = p1_y = mouse_y;
-					r = 0;
-				}
-			}
-			if (mouse_action == L_MOUSE_MOVE_DOWN)
-			{
-				// Example of elastic line
-				if (p1_x != mouse_x || p1_y != mouse_y)
-				{
-					// Erase previous line. NOTE: using XOR line
-					if (shape == Line) {
-						DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-					}
-					if (shape == Circle) {
-						CircleBresenham(p0_x, p0_y, r);
-					}
-
-					p1_x = mouse_x;
-					p1_y = mouse_y;
-
-					// Draw new line
-					if (shape == Line) {
-						DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-					}
-					if (shape == Circle) {
-						r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
-						CircleBresenham(p0_x, p0_y, r);
-					}
-
-					x_1 = p0_x;
-					y_1 = p0_y;
-					x_2 = p1_x;
-					y_2 = p1_y;
-				}
-			}
-			else  if (mouse_action == L_MOUSE_UP)
-			{
-				if (shape == Line) {
-					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-					DrawLine(p0_x, p0_y, p1_x, p1_y);
-					p0_x = p1_x = mouse_x;
-					p0_y = p1_y = mouse_y;
-
-					if (polygon.n > 0 &&
-						(polygon.vertex[polygon.n - 1].x != p0_x
-						|| polygon.vertex[polygon.n - 1].y != p0_y))
-						InsertVertex(polygon, p0_x, p0_y);
-				}
-				if (shape == Circle) {
-					DrawCircle(p0_x, p0_y, r);
-				}
-				mouse_action = NO_ACTION;
-			}
-			else  if (mouse_action == R_MOUSE_DOWN)
-			{
-				if (shape == Line){
-					if (polygon.n != 0){
-						DrawPoly(polygon);
-						/*if (algorithmType == LINE_SCAN) {
-							edge_list_type list;
-							FillPolygon(polygon, list);
-						}
-						else if (algorithmType == FLOOD_FILL_RECURSIVE){
-							FloodFillRecursive(polygon);
-						}
-						else {
-							FloodFill(polygon);
-						}*/
-						polygon.n = 0;
-					}
-				}
-				if (shape == Circle) {
-					// FloodFillNotRecCircle(p0_x, p0_y, r);
-				}
-
-				mouse_action = NO_ACTION;
-			}
-	}
-
-	CloseGraphics();
+//	Shape shape = Line;
+//	SetGraphicsColor(color, 1);
+//
+//	InitGraf();
+//
+//	int p0_x, p0_y, p1_x, p1_y, x_1, y_1, x_2, y_2;
+//	int r = 0, menu_it = 0;
+//	polygon_type polygon;
+//	polygon.n = 0;
+//
+//	InitGraphics();
+//
+//	menu_item = 0;
+//	//CheckMenuItem(menu_color, 1, MF_CHECKED);
+//	CheckMenuItem(menu_draw, 21, MF_CHECKED);
+//	//CheckMenuItem(menu_pattern, 100 + pattern_max, MF_CHECKED);
+//	//CheckMenuItem(menu_algorithm, 200, MF_CHECKED);
+//
+//	current_pattern = pattern_max;
+//	algorithmType = LINE_SCAN;
+//
+//	while (key_input != ESC)						// ESC exits the program
+//	{
+//		CheckGraphicsMsg();
+//
+//		if (menu_it != menu_item)
+//
+//			/*if (menu_item >= 200){
+//				for (int i = 0; i <= 2; i++)
+//				CheckMenuItem(menu_algorithm, 200 + i, MF_UNCHECKED);
+//
+//				CheckMenuItem(menu_algorithm, menu_item, MF_CHECKED);
+//				if (menu_item >= 200 && menu_item <= 202){
+//				algorithmType = menu_item - 200;
+//				}
+//
+//				menu_it = menu_item;
+//
+//				}*/
+//				/*else if (menu_item >= 100){
+//					for (int i = 0; i <= pattern_max; i++)
+//					CheckMenuItem(menu_pattern, 100 + i, MF_UNCHECKED);
+//
+//					CheckMenuItem(menu_pattern, menu_item, MF_CHECKED);
+//					if (menu_item >= 100 && menu_item <= 100 + pattern_max)
+//					current_pattern = menu_item - 100;
+//					menu_it = menu_item;
+//					}*/
+//					//			else {
+//					switch (menu_item){
+//					case 21:
+//						CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
+//						CheckMenuItem(menu_draw, 21, MF_CHECKED);
+//						menu_it = menu_item;
+//						shape = Line;
+//						break;
+//					case 22:
+//						CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
+//						CheckMenuItem(menu_draw, 22, MF_CHECKED);
+//						menu_it = menu_item;
+//						shape = Circle;
+//						break;
+//						/*default:
+//							int i;
+//							for (i = 1; i <= 16; i++)
+//							CheckMenuItem(menu_color, i, MF_UNCHECKED);
+//							CheckMenuItem(menu_color, menu_item, MF_CHECKED);
+//							if (menu_item >= 1 && menu_item <= 16)
+//							color = menu_item - 1;
+//
+//							menu_it = menu_item;*/
+//		}
+//
+//		//		}
+//
+//		if (mouse_action == L_MOUSE_DOWN)
+//		{
+//			// Pick first point up 
+//			if (shape == Line){
+//				if (polygon.n == 0)
+//				{
+//					p0_x = p1_x = mouse_x;
+//					p0_y = p1_y = mouse_y;
+//					InsertVertex(polygon, p0_x, p0_y);
+//				}
+//			}
+//			if (shape == Circle){
+//				p0_x = p1_x = mouse_x;
+//				p0_y = p1_y = mouse_y;
+//				r = 0;
+//			}
+//		}
+//		if (mouse_action == L_MOUSE_MOVE_DOWN)
+//		{
+//			// Example of elastic line
+//			if (p1_x != mouse_x || p1_y != mouse_y)
+//			{
+//				// Erase previous line. NOTE: using XOR line
+//				if (shape == Line) {
+//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+//				}
+//				if (shape == Circle) {
+//					CircleBresenham(p0_x, p0_y, r);
+//				}
+//
+//				p1_x = mouse_x;
+//				p1_y = mouse_y;
+//
+//				// Draw new line
+//				if (shape == Line) {
+//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+//				}
+//				if (shape == Circle) {
+//					r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
+//					CircleBresenham(p0_x, p0_y, r);
+//				}
+//
+//				x_1 = p0_x;
+//				y_1 = p0_y;
+//				x_2 = p1_x;
+//				y_2 = p1_y;
+//			}
+//		}
+//		else  if (mouse_action == L_MOUSE_UP)
+//		{
+//			if (shape == Line) {
+//				DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+//				DrawLine(p0_x, p0_y, p1_x, p1_y);
+//				p0_x = p1_x = mouse_x;
+//				p0_y = p1_y = mouse_y;
+//
+//				if (polygon.n > 0 &&
+//					(polygon.vertex[polygon.n - 1].x != p0_x
+//					|| polygon.vertex[polygon.n - 1].y != p0_y))
+//					InsertVertex(polygon, p0_x, p0_y);
+//			}
+//			if (shape == Circle) {
+//				DrawCircle(p0_x, p0_y, r);
+//			}
+//			mouse_action = NO_ACTION;
+//		}
+//		else  if (mouse_action == R_MOUSE_DOWN)
+//		{
+//			if (shape == Line){
+//				if (polygon.n != 0){
+//					DrawPoly(polygon);
+//					/*if (algorithmType == LINE_SCAN) {
+//						edge_list_type list;
+//						FillPolygon(polygon, list);
+//						}
+//						else if (algorithmType == FLOOD_FILL_RECURSIVE){
+//						FloodFillRecursive(polygon);
+//						}
+//						else {
+//						FloodFill(polygon);
+//						}*/
+//					polygon.n = 0;
+//				}
+//			}
+//			if (shape == Circle) {
+//				// FloodFillNotRecCircle(p0_x, p0_y, r);
+//			}
+//
+//			mouse_action = NO_ACTION;
+//		}
+//	}
+//
+//	CloseGraphics();
 }

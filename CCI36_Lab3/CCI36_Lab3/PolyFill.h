@@ -18,7 +18,15 @@ typedef struct {
 	edge_type edge[MAX_POLY];
 } edge_list_type;
 
+typedef struct {
+	float x, y;
+} float_point_type;
+typedef struct {
+	int n;
+	float_point_type vertex[MAX_POLY];
+} float_polygon_type;
+
 void InsertVertex(polygon_type &poly, int x, int y);
 
-void ScanFillPolygon(polygon_type poly);
+//void ScanFillPolygon(polygon_type poly);
 #endif
