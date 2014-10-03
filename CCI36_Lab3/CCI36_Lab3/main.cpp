@@ -1112,7 +1112,7 @@ void PickEntity(int x, int y)
 	selected_entity = entities.end();
 }
 
-void Delete()
+void DeleteEntity()
 {
 	if (selected_entity != entities.end())
 	{
@@ -1146,7 +1146,7 @@ void MouseDownDraw() {
 }
 
 void MouseDownPick() {
-
+	PickEntity(mouse_x, mouse_y);
 }
 
 void MouseDownZoom() {
@@ -1243,7 +1243,7 @@ void RMouseDownDraw() {
 }
 
 void RMouseDownPick() {
-
+	DeleteEntity();
 }
 
 void RMouseDownZoom() {
