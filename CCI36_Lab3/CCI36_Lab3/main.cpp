@@ -1087,6 +1087,8 @@ std::list<Entity*> entities;
 enum Action { Draw, Pick, Zoom };
 enum Shape { Line, Circle, Poly };
 
+Shape shape = Line;
+	
 void MouseDownDraw() {
 	//			// Pick first point up 
 	//			if (shape == Line){
@@ -1212,7 +1214,6 @@ void RMouseDownZoom() {
 void main()
 {
 		Action action = Draw;
-		Shape shape = Line;
 		SetGraphicsColor(color, 1);
 
 		InitGraf();
@@ -1226,7 +1227,7 @@ void main()
 		InitGraphics();
 	
 		menu_item = 0;
-		//CheckMenuItem(menu_color, 1, MF_CHECKED);
+		CheckMenuItem(menu_action, 1, MF_CHECKED);
 		CheckMenuItem(menu_draw, 21, MF_CHECKED);
 	
 		while (key_input != ESC)						// ESC exits the program
@@ -1248,15 +1249,25 @@ void main()
 							menu_it = menu_item;
 							shape = Circle;
 							break;
-							/*default:
+							default:
 								int i;
 								for (i = 1; i <= 16; i++)
-								CheckMenuItem(menu_color, i, MF_UNCHECKED);
-								CheckMenuItem(menu_color, menu_item, MF_CHECKED);
-								if (menu_item >= 1 && menu_item <= 16)
-								color = menu_item - 1;
-	
-								menu_it = menu_item;*/
+								CheckMenuItem(menu_action, i, MF_UNCHECKED);
+								CheckMenuItem(menu_action, menu_item, MF_CHECKED);
+								if (menu_item >= 1 && menu_item <= 16){
+									switch (menu_item) {
+									case 1:
+										action = Draw;
+										break;
+									case 2:
+										action = Pick;
+										break;
+									case 3:
+										action = Zoom;
+										break;
+									}
+								}
+								menu_it = menu_item;
 					}
 	
 			}
