@@ -1201,7 +1201,8 @@ void MouseDownPick() {
 }
 
 void MouseDownZoom() {
-
+	p0_x = p1_x = mouse_x;
+	p0_y = p1_y = mouse_y;
 }
 
 void MouseMoveDraw() {
@@ -1240,7 +1241,8 @@ void MouseMovePick() {
 }
 
 void MouseMoveZoom() {
-
+	p1_x = mouse_x;
+	p1_y = mouse_y;
 }
 
 void MouseUpDraw() {
@@ -1273,7 +1275,18 @@ void MouseUpPick() {
 }
 
 void MouseUpZoom() {
-
+	float xf0, yf0, xf1, yf1;
+	GetWorldCoordinates(p0_x, p0_y, &xf0, &yf0);
+	GetWorldCoordinates(p1_x, p1_y, &xf1, &yf1);
+	float aux_x = xf0 + xf1;
+	float aux_y = yf0 + yf1;
+	xf0 = min(xf0, xf1);
+	yf0 = min(yf0, yf1);
+	xf1 = aux_x - xf0;
+	yf1 = aux_y - yf0;
+	SetWindow(xf0, xf1, yf0, yf1);
+	ReDrawAll();
+	mouse_action = NO_ACTION;
 }
 
 void RMouseDownDraw() {
@@ -1291,7 +1304,9 @@ void RMouseDownPick() {
 }
 
 void RMouseDownZoom() {
-
+	SetWindow(0.0f, (float)x_end, 0.0f, (float)y_end);
+	ReDrawAll();
+	mouse_action = NO_ACTION;
 }
 
 void main()
