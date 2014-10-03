@@ -1054,20 +1054,30 @@ public:
 	}
 };
 
-class Polygon : public Entity
+class ClosedPolygon : public Entity
 {
 private:
 	std::vector<Segment> edges;
-	float_polygon_type polygon;
+	float_polygon_type float_polygon;
 
 public:
-	Polygon(float_polygon_type polygon)
+	ClosedPolygon(polygon_type polygon)
 	{
-		this->polygon = polygon;
+		float_polygon.n = polygon.n;
 
+		float xf, yf;
 		for (int i = 0; i < polygon.n; i++)
 		{
-			edges.push_back(Segment(polygon.vertex[i].x, polygon.vertex[i].y, polygon.vertex[(i + 1) % polygon.n].x, polygon.vertex[(i + 1) % polygon.n].y));
+			DeviceToNormalized(polygon.vertex[i].x, polygon.vertex[i].y, &xf, &yf);
+			InverseViewingTransformation(&xf, &yf);
+			float_polygon.vertex[i].x = xf;
+			float_polygon.vertex[i].y = yf;
+		}
+
+		float_point_type *vertex = float_polygon.vertex;
+		for (int i = 0; i < polygon.n; i++)
+		{
+			edges.push_back(Segment(vertex[i].x, vertex[i].y, vertex[(i + 1) % float_polygon.n].x, vertex[(i + 1) % float_polygon.n].y));
 		}
 	}
 
@@ -1085,7 +1095,7 @@ public:
 
 	virtual void EspecificDraw()
 	{
-		DrawPolygon(polygon);
+		DrawPolygon(float_polygon);
 	}
 };
 
@@ -1281,6 +1291,7 @@ void RMouseDownDraw() {
 	if (shape == Poly){
 		if (polygon.n != 0){
 			DrawPoly(polygon);
+			entities.push_back(new ClosedPolygon(polygon));
 			polygon.n = 0;
 		}
 	}
