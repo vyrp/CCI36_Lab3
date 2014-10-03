@@ -958,11 +958,15 @@ void DrawPolygon(float_polygon_type poly)
 
 void DrawEllipse(float x0, float y0, float rx, float ry) // World coordinates
 {
+	rx += x0;
+	ry += y0;
 	int rix, riy, xi0, yi0;
 	ViewingTransformation(&x0, &y0);
 	ViewingTransformation(&rx, &ry);
 	NormalizedToDevice(x0, y0, &xi0, &yi0);
 	NormalizedToDevice(rx, ry, &rix, &riy);
+	rix = abs(rix - xi0);
+	riy = abs(riy - yi0);
 
 	int x1, y1, x2, y2;
 	if (rix > 0)
@@ -1002,7 +1006,7 @@ private:
 	my_color color;
 
 protected:
-	virtual void EspecificDraw() = 0;
+	virtual void _Draw() = 0;
 
 public:
 	Entity()
@@ -1023,20 +1027,20 @@ public:
 	void Draw()
 	{
 		SetGraphicsColor(this->color, 1);
-		this->EspecificDraw();
+		this->_Draw();
 		SetGraphicsColor(::color, 1);
 	}
 
 	virtual bool Pick(float x, float y, float d) = 0;
 };
 
-class Segment : public Entity
+class LineEntity : public Entity
 {
 private:
 	float x1, y1, x2, y2;
 
 public:
-	Segment(float x1, float y1, float x2, float y2) : x1(x1), y1(y1), x2(x2), y2(y2) { }
+	LineEntity(float x1, float y1, float x2, float y2) : x1(x1), y1(y1), x2(x2), y2(y2) { }
 
 	virtual bool Pick(float x, float y, float d) // World coordinates
 	{
@@ -1048,20 +1052,20 @@ public:
 		return (dist2 <= d*d) && ((xmin - d <= x) && (x <= xmax + d) && (ymin - d <= y) && (y <= ymax + d));
 	}
 
-	virtual void EspecificDraw()
+	virtual void _Draw()
 	{
 		DrawLine2D(x1, y1, x2, y2);
 	}
 };
 
-class ClosedPolygon : public Entity
+class PolygonEntity : public Entity
 {
 private:
-	std::vector<Segment> edges;
+	std::vector<LineEntity> edges;
 	float_polygon_type float_polygon;
 
 public:
-	ClosedPolygon(polygon_type polygon)
+	PolygonEntity(polygon_type polygon)
 	{
 		float_polygon.n = polygon.n;
 
@@ -1077,7 +1081,7 @@ public:
 		float_point_type *vertex = float_polygon.vertex;
 		for (int i = 0; i < polygon.n; i++)
 		{
-			edges.push_back(Segment(vertex[i].x, vertex[i].y, vertex[(i + 1) % float_polygon.n].x, vertex[(i + 1) % float_polygon.n].y));
+			edges.push_back(LineEntity(vertex[i].x, vertex[i].y, vertex[(i + 1) % float_polygon.n].x, vertex[(i + 1) % float_polygon.n].y));
 		}
 	}
 
@@ -1093,31 +1097,37 @@ public:
 		return false;
 	}
 
-	virtual void EspecificDraw()
+	virtual void _Draw()
 	{
 		DrawPolygon(float_polygon);
 	}
 };
 
-class Circunference : public Entity
+class EllipseEntity : public Entity
 {
 private:
-	float x0, y0, r;
+	float x0, y0, rx, ry;
 public:
-	Circunference(float x0, float y0, float r) : x0(x0), y0(y0), r(r) { }
+	EllipseEntity(float x0, float y0, float rx, float ry) : x0(x0), y0(y0), rx(rx), ry(ry) { }
 
 	virtual bool Pick(float x, float y, float d) // World coordinates
 	{
-		float dist2 = sqr(x - x0) + sqr(y - y0);
-		if (r - d <= 0)
-			return dist2 <= sqr(d + r);
-		else
-			return sqr(r - d) <= dist2 && dist2 <= sqr(d + r);
+		float dx2 = sqr(x - x0);
+		float dy2 = sqr(y - y0);
+		float a2 = sqr(rx - d);
+		float A2 = sqr(rx + d);
+		float b2 = sqr(ry - d);
+		float B2 = sqr(ry + d);
+		if (d >= rx || d >= ry)
+		{
+			return dx2*B2 + dy2*A2 <= A2*B2;
+		}
+		return dx2*b2 + dy2*a2 >= a2*b2 && dx2*B2 + dy2*A2 <= A2*B2;
 	}
 
-	virtual void EspecificDraw()
+	virtual void _Draw()
 	{
-		DrawEllipse(r, r, x0, y0);
+		DrawEllipse(x0, y0, rx, ry);
 	}
 };
 
@@ -1274,11 +1284,17 @@ void MouseUpDraw() {
 			float xf1, yf1, xf2, yf2;
 			GetWorldCoordinates(x_1, y_1, &xf1, &yf1);
 			GetWorldCoordinates(x_2, y_2, &xf2, &yf2);
-			entities.push_back(new Segment(xf1, yf1, xf2, yf2));
+			entities.push_back(new LineEntity(xf1, yf1, xf2, yf2));
 		}
 	}
 	if (shape == Circle) {
 		DrawCircle(p0_x, p0_y, r);
+		float x0, y0, rx, ry;
+		GetWorldCoordinates(x_1, y_1, &x0, &y0);
+		GetWorldCoordinates(x_1 + r, y_1 + r, &rx, &ry);
+		rx = abs(rx - x0);
+		ry = abs(ry - y0);
+		entities.push_back(new EllipseEntity(x0, y0, rx, ry));
 	}
 	mouse_action = NO_ACTION;
 }
@@ -1306,7 +1322,7 @@ void RMouseDownDraw() {
 	if (shape == Poly){
 		if (polygon.n != 0){
 			DrawPoly(polygon);
-			entities.push_back(new ClosedPolygon(polygon));
+			entities.push_back(new PolygonEntity(polygon));
 			polygon.n = 0;
 		}
 	}
