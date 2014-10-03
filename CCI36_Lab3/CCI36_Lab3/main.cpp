@@ -1252,122 +1252,122 @@ void RMouseDownZoom() {
 
 void main()
 {
-		Action action = Draw;
-		SetGraphicsColor(color, 1);
+	Action action = Draw;
+	SetGraphicsColor(color, 1);
 
-		InitGraf();
-	
+	InitGraf();
+
 	//	int p0_x, p0_y, p1_x, p1_y, x_1, y_1, x_2, y_2;
 	//	int r = 0;
-		int menu_it = 0;
+	int menu_it = 0;
 	//	polygon_type polygon;
 	//	polygon.n = 0;
 	//
-		InitGraphics();
-	
-		menu_item = 0;
-		CheckMenuItem(menu_action, 1, MF_CHECKED);
-		CheckMenuItem(menu_draw, 21, MF_CHECKED);
-	
-		while (key_input != ESC)						// ESC exits the program
-		{
-			CheckGraphicsMsg();
+	InitGraphics();
 
-			if (menu_it != menu_item)
-			{
-						switch (menu_item){
-						case 21:
-							CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
-							CheckMenuItem(menu_draw, 21, MF_CHECKED);
-							menu_it = menu_item;
-							shape = Line;
-							break;
-						case 22:
-							CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
-							CheckMenuItem(menu_draw, 22, MF_CHECKED);
-							menu_it = menu_item;
-							shape = Circle;
-							break;
-							default:
-								int i;
-								for (i = 1; i <= 16; i++)
-								CheckMenuItem(menu_action, i, MF_UNCHECKED);
-								CheckMenuItem(menu_action, menu_item, MF_CHECKED);
-								if (menu_item >= 1 && menu_item <= 16){
-									switch (menu_item) {
-									case 1:
-										action = Draw;
-										break;
-									case 2:
-										action = Pick;
-										break;
-									case 3:
-										action = Zoom;
-										break;
-									}
-								}
-								menu_it = menu_item;
+	menu_item = 0;
+	CheckMenuItem(menu_action, 1, MF_CHECKED);
+	CheckMenuItem(menu_draw, 21, MF_CHECKED);
+
+	while (key_input != ESC)						// ESC exits the program
+	{
+		CheckGraphicsMsg();
+
+		if (menu_it != menu_item)
+		{
+			switch (menu_item){
+			case 21:
+				CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
+				CheckMenuItem(menu_draw, 21, MF_CHECKED);
+				menu_it = menu_item;
+				shape = Line;
+				break;
+			case 22:
+				CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
+				CheckMenuItem(menu_draw, 22, MF_CHECKED);
+				menu_it = menu_item;
+				shape = Circle;
+				break;
+			default:
+				int i;
+				for (i = 1; i <= 16; i++)
+					CheckMenuItem(menu_action, i, MF_UNCHECKED);
+				CheckMenuItem(menu_action, menu_item, MF_CHECKED);
+				if (menu_item >= 1 && menu_item <= 16){
+					switch (menu_item) {
+					case 1:
+						action = Draw;
+						break;
+					case 2:
+						action = Pick;
+						break;
+					case 3:
+						action = Zoom;
+						break;
 					}
-	
-			}
-	
-			if (mouse_action == L_MOUSE_DOWN)
-			{
-				switch (action) {
-				case Draw:
-					MouseDownDraw();
-					break;
-				case Pick:
-					MouseDownPick();
-					break;
-				case Zoom:
-					MouseDownZoom();
-					break;
 				}
+				menu_it = menu_item;
 			}
-			if (mouse_action == L_MOUSE_MOVE_DOWN)
-			{
-				switch (action) {
-				case Draw:
-					MouseMoveDraw();
-					break;
-				case Pick:
-					MouseMovePick();
-					break;
-				case Zoom:
-					MouseMoveZoom();
-					break;
-				}
-			}
-			else  if (mouse_action == L_MOUSE_UP)
-			{
-				switch (action) {
-				case Draw:
-					MouseUpDraw();
-					break;
-				case Pick:
-					MouseUpPick();
-					break;
-				case Zoom:
-					MouseUpZoom();
-					break;
-				}
-			}
-			else  if (mouse_action == R_MOUSE_DOWN)
-			{
-				switch (action) {
-				case Draw:
-					RMouseDownDraw();
-					break;
-				case Pick:
-					RMouseDownPick();
-					break;
-				case Zoom:
-					RMouseDownZoom();
-					break;
-				}
+
+		}
+
+		if (mouse_action == L_MOUSE_DOWN)
+		{
+			switch (action) {
+			case Draw:
+				MouseDownDraw();
+				break;
+			case Pick:
+				MouseDownPick();
+				break;
+			case Zoom:
+				MouseDownZoom();
+				break;
 			}
 		}
-	
-		CloseGraphics();
+		if (mouse_action == L_MOUSE_MOVE_DOWN)
+		{
+			switch (action) {
+			case Draw:
+				MouseMoveDraw();
+				break;
+			case Pick:
+				MouseMovePick();
+				break;
+			case Zoom:
+				MouseMoveZoom();
+				break;
+			}
+		}
+		else  if (mouse_action == L_MOUSE_UP)
+		{
+			switch (action) {
+			case Draw:
+				MouseUpDraw();
+				break;
+			case Pick:
+				MouseUpPick();
+				break;
+			case Zoom:
+				MouseUpZoom();
+				break;
+			}
+		}
+		else  if (mouse_action == R_MOUSE_DOWN)
+		{
+			switch (action) {
+			case Draw:
+				RMouseDownDraw();
+				break;
+			case Pick:
+				RMouseDownPick();
+				break;
+			case Zoom:
+				RMouseDownZoom();
+				break;
+			}
+		}
+	}
+
+	CloseGraphics();
 }
