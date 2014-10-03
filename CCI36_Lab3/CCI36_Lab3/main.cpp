@@ -207,7 +207,7 @@ void InitGraphics()
 		L"Lab 2 CCI-36",					// window name                 
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,	// Window class style                  
 		0, 0,								//window  top, left corner(origin)
-		500, 500,							// window X,Y size                                    
+		numXpixels, numYpixels,				// window X,Y size                                    
 		(HWND)NULL,							// Parent window
 		(HMENU)menu,						// handle to menu
 		(HINSTANCE)hInst,					// handle to application instance
@@ -475,8 +475,7 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPa
 
 void DrawXorPixel(int x, int y)
 {
-	unsigned int mask = 0x00FFFFFF;
-
+	unsigned int mask = color_trans_map[color];
 	COLORREF cor = GetPixel(hdc, x, y);
 
 	cor ^= mask; // bit-bit Xor operation mask with color
@@ -1182,6 +1181,16 @@ Shape shape = Line;
 polygon_type polygon;
 int p0_x, p0_y, p1_x, p1_y, r, x_1, y_1, x_2, y_2;
 
+void DrawZoomRectangle() {
+	int old_color = color;
+	color = MY_BLUE;
+	DrawLineXor(p0_x, p0_y, p0_x, p1_y);
+	DrawLineXor(p0_x, p0_y, p1_x, p0_y);
+	DrawLineXor(p1_x, p0_y, p1_x, p1_y);
+	DrawLineXor(p0_x, p1_y, p1_x, p1_y);
+	color = old_color;
+}
+
 void GetWorldCoordinates(int xd, int yd, float *x, float* y) {
 	DeviceToNormalized(xd, yd, x, y);
 	InverseViewingTransformation(x, y);
@@ -1216,6 +1225,7 @@ void MouseDownPick() {
 void MouseDownZoom() {
 	p0_x = p1_x = mouse_x;
 	p0_y = p1_y = mouse_y;
+	DrawZoomRectangle();
 }
 
 void MouseMoveDraw() {
@@ -1254,8 +1264,12 @@ void MouseMovePick() {
 }
 
 void MouseMoveZoom() {
-	p1_x = mouse_x;
-	p1_y = mouse_y;
+	if (mouse_x != p1_x && mouse_y != p1_y) {
+		DrawZoomRectangle();
+		p1_x = mouse_x;
+		p1_y = mouse_y;
+		DrawZoomRectangle();
+	}
 }
 
 void MouseUpDraw() {
@@ -1288,6 +1302,7 @@ void MouseUpPick() {
 }
 
 void MouseUpZoom() {
+	DrawZoomRectangle();
 	float xf0, yf0, xf1, yf1;
 	GetWorldCoordinates(p0_x, p0_y, &xf0, &yf0);
 	GetWorldCoordinates(p1_x, p1_y, &xf1, &yf1);
