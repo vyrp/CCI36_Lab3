@@ -126,7 +126,6 @@ const unsigned int Mask = 0x00FFFFFF;
 void DrawPixel(int x, int y)
 {
 	SetPixel(hdc, x, y, xor ? GetPixel(hdc, x, y) ^ Mask : win_draw_color);
-	SetGraphicsColor(color, 1);
 }
 
 /****************************************************************************
@@ -242,6 +241,14 @@ void CloseGraphics(void)
 	DeleteObject(hpen);
 	ReleaseDC(WinHandle, hdc);
 	DestroyWindow(WinHandle);          /* Tidy up... */
+}
+
+void ClearGraphicsScreen(void)
+{
+	RECT rect;
+	HBRUSH hbrush = CreateSolidBrush(color_trans_map[MY_BLACK]);
+	GetWindowRect(WinHandle, &rect);
+	FillRect(hdc, &rect, hbrush);
 }
 
 /****************************************************************************
@@ -990,8 +997,11 @@ void DrawEllipse(float x0, float y0, float rx, float ry) // World coordinates
 
 class Entity
 {
-protected:
+private:
 	my_color color;
+
+protected:
+	virtual void EspecificDraw() = 0;
 
 public:
 	Entity()
@@ -1009,13 +1019,19 @@ public:
 		color = MY_WHITE;
 	}
 
+	void Draw()
+	{
+		SetGraphicsColor(this->color, 1);
+		this->EspecificDraw();
+		SetGraphicsColor(::color, 1);
+	}
+
 	virtual bool Pick(float x, float y, float d) = 0;
-	virtual void Draw() = 0;
 };
 
 class Segment : public Entity
 {
-protected:
+private:
 	float x1, y1, x2, y2;
 
 public:
@@ -1031,7 +1047,7 @@ public:
 		return (dist2 <= d*d) && ((xmin - d <= x) && (x <= xmax + d) && (ymin - d <= y) && (y <= ymax + d));
 	}
 
-	virtual void Draw()
+	virtual void EspecificDraw()
 	{
 		DrawLine2D(x1, y1, x2, y2);
 	}
@@ -1039,7 +1055,7 @@ public:
 
 class Polygon : public Entity
 {
-protected:
+private:
 	std::vector<Segment> edges;
 	float_polygon_type polygon;
 
@@ -1066,18 +1082,18 @@ public:
 		return false;
 	}
 
-	virtual void Draw()
+	virtual void EspecificDraw()
 	{
 		DrawPolygon(polygon);
 	}
 };
 
-class Circle : public Entity
+class Circunference : public Entity
 {
-protected:
+private:
 	float x0, y0, r;
 public:
-	Circle(float x0, float y0, float r) : x0(x0), y0(y0), r(r) { }
+	Circunference(float x0, float y0, float r) : x0(x0), y0(y0), r(r) { }
 
 	virtual bool Pick(float x, float y, float d) // World coordinates
 	{
@@ -1088,7 +1104,7 @@ public:
 			return sqr(r - d) <= dist2 && dist2 <= sqr(d + r);
 	}
 
-	virtual void Draw()
+	virtual void EspecificDraw()
 	{
 		DrawEllipse(r, r, x0, y0);
 	}
@@ -1105,7 +1121,8 @@ void PickEntity(int x, int y)
 	DeviceToNormalized(2, 2, &dxf, &dyf);
 	InverseViewingTransformation(&dxf, &dyf);
 
-	for (std::list<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
+	std::list<Entity*>::iterator it;
+	for (it = entities.begin(); it != entities.end(); it++)
 	{
 		if ((*it)->Pick(xf, yf, sqrt(dxf*dyf)))
 		{
@@ -1113,20 +1130,31 @@ void PickEntity(int x, int y)
 			{
 				(*selected_entity)->SetUnactive();
 			}
-			selected_entity = it;
-			(*selected_entity)->SetActive();
-			return;
+			(*it)->SetActive();
+			break;
 		}
 	}
-	selected_entity = entities.end();
+	selected_entity = it;
+
+	ClearGraphicsScreen();
+	for (it = entities.begin(); it != entities.end(); it++)
+	{
+		(*it)->Draw();
+	}
 }
 
 void DeleteEntity()
 {
 	if (selected_entity != entities.end())
 	{
+		delete *selected_entity;
 		entities.erase(selected_entity);
 		selected_entity = entities.end();
+		ClearGraphicsScreen();
+		for (std::list<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
+		{
+			(*it)->Draw();
+		}
 	}
 }
 
@@ -1226,7 +1254,10 @@ void MouseUpDraw() {
 				InsertVertex(polygon, p0_x, p0_y);
 		}
 		else if (shape == Line) {
-
+			float xf1, yf1, xf2, yf2;
+			GetWorldCoordinates(x_1, y_1, &xf1, &yf1);
+			GetWorldCoordinates(x_2, y_2, &xf2, &yf2);
+			entities.push_back(new Segment(xf1, yf1, xf2, yf2));
 		}
 	}
 	if (shape == Circle) {
