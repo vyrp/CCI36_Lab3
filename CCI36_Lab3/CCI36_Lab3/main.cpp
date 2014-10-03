@@ -1113,6 +1113,15 @@ public:
 std::list<Entity*> entities;
 std::list<Entity*>::iterator selected_entity = entities.end();
 
+void ReDrawAll()
+{
+	ClearGraphicsScreen();
+	for (std::list<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
+	{
+		(*it)->Draw();
+	}
+}
+
 void PickEntity(int x, int y)
 {
 	float xf, yf, dxf, dyf;
@@ -1121,26 +1130,23 @@ void PickEntity(int x, int y)
 	DeviceToNormalized(2, 2, &dxf, &dyf);
 	InverseViewingTransformation(&dxf, &dyf);
 
+	if (selected_entity != entities.end())
+	{
+		(*selected_entity)->SetUnactive();
+	}
+
 	std::list<Entity*>::iterator it;
 	for (it = entities.begin(); it != entities.end(); it++)
 	{
 		if ((*it)->Pick(xf, yf, sqrt(dxf*dyf)))
 		{
-			if (selected_entity != entities.end())
-			{
-				(*selected_entity)->SetUnactive();
-			}
 			(*it)->SetActive();
 			break;
 		}
 	}
 	selected_entity = it;
 
-	ClearGraphicsScreen();
-	for (it = entities.begin(); it != entities.end(); it++)
-	{
-		(*it)->Draw();
-	}
+	ReDrawAll();
 }
 
 void DeleteEntity()
@@ -1150,11 +1156,7 @@ void DeleteEntity()
 		delete *selected_entity;
 		entities.erase(selected_entity);
 		selected_entity = entities.end();
-		ClearGraphicsScreen();
-		for (std::list<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
-		{
-			(*it)->Draw();
-		}
+		ReDrawAll();
 	}
 }
 
