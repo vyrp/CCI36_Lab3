@@ -162,8 +162,8 @@ void MenuBar()
 		(LPCTSTR)L"&Draw"		// menu-item content
 		);
 
+	InsertMenu(menu_draw, 0, MF_STRING, 20, (LPCTSTR)L"&Line");
 	InsertMenu(menu_draw, 0, MF_STRING, 21, (LPCTSTR)L"&Polygon");
-
 	AppendMenu(menu_draw, MF_STRING, 22, (LPCTSTR)L"&Circle");
 
 	InsertMenu(menu_action, 0, MF_STRING, 1, (LPCTSTR)L"Draw");
@@ -526,6 +526,15 @@ bool Empty(int x, int y)
 
 }
 
+void InsertVertex(polygon_type &poly, int x, int y)
+{	// insert x,y as the last element
+	if (poly.n < MAX_POLY)
+	{
+		poly.vertex[poly.n].x = x;
+		poly.vertex[poly.n].y = y;
+		poly.n++;
+	}
+}
 
 void InsertVertex(float_polygon_type &poly, float x, float y)
 {	// insert x,y as the last element
@@ -535,7 +544,6 @@ void InsertVertex(float_polygon_type &poly, float x, float y)
 		poly.vertex[poly.n].y = y;
 		poly.n++;
 	}
-
 }
 
 void PlotCircle(int xc, int yc, int x, int y)
@@ -672,6 +680,21 @@ float number) */
 {
 	*xd = (int)(x_start + width*xn);
 	*yd = (int)(y_end - (y_start + heigth*yn));
+}
+
+void InverseViewingTransformation(float *x, float *y)
+/* transformation from object point to normalized point */
+{
+	*x = (*x - vxs)/vwsx + wxs;
+	*y = (*y - vys)/vwsy + wys;
+}
+
+void DeviceToNormalized(float *xn, float *yn, int xd, int yd)
+/* transformation from normalized point to device coordenate (its rounds the
+float number) */
+{
+	*xn = (xd - x_start) * 1.0f / width;
+	*yn = ((y_end - yd) - y_start) * 1.0f / heigth;
 }
 
 
@@ -1088,22 +1111,34 @@ enum Action { Draw, Pick, Zoom };
 enum Shape { Line, Circle, Poly };
 
 Shape shape = Line;
-	
+polygon_type polygon;
+int p0_x, p0_y, p1_x, p1_y, r, x_1, y_1, x_2, y_2;
+
+void GetWorldCoordinates(int xd, int yd, float *x, float* y) {
+	DeviceToNormalized(x, y, xd, yd);
+	InverseViewingTransformation(x, y);
+}
+
 void MouseDownDraw() {
-	//			// Pick first point up 
-	//			if (shape == Line){
-	//				if (polygon.n == 0)
-	//				{
-	//					p0_x = p1_x = mouse_x;
-	//					p0_y = p1_y = mouse_y;
-	//					InsertVertex(polygon, p0_x, p0_y);
-	//				}
-	//			}
-	//			if (shape == Circle){
-	//				p0_x = p1_x = mouse_x;
-	//				p0_y = p1_y = mouse_y;
-	//				r = 0;
-	//			}
+	switch (shape) {
+	case Line:
+		p0_x = p1_x = mouse_x;
+		p0_y = p1_y = mouse_y;
+		break;
+	case Poly:
+		if (polygon.n == 0)
+		{
+			p0_x = p1_x = mouse_x;
+			p0_y = p1_y = mouse_y;
+			InsertVertex(polygon, p0_x, p0_y);
+		}
+		break;
+	case Circle:
+		p0_x = p1_x = mouse_x;
+		p0_y = p1_y = mouse_y;
+		r = 0;
+		break;
+	}
 }
 
 void MouseDownPick() {
@@ -1115,34 +1150,34 @@ void MouseDownZoom() {
 }
 
 void MouseMoveDraw() {
-	//			// Example of elastic line
-	//			if (p1_x != mouse_x || p1_y != mouse_y)
-	//			{
-	//				// Erase previous line. NOTE: using XOR line
-	//				if (shape == Line) {
-	//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-	//				}
-	//				if (shape == Circle) {
-	//					CircleBresenham(p0_x, p0_y, r);
-	//				}
-	//
-	//				p1_x = mouse_x;
-	//				p1_y = mouse_y;
-	//
-	//				// Draw new line
-	//				if (shape == Line) {
-	//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-	//				}
-	//				if (shape == Circle) {
-	//					r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
-	//					CircleBresenham(p0_x, p0_y, r);
-	//				}
-	//
-	//				x_1 = p0_x;
-	//				y_1 = p0_y;
-	//				x_2 = p1_x;
-	//				y_2 = p1_y;
-	//			}
+	// Example of elastic line
+	if (p1_x != mouse_x || p1_y != mouse_y)
+	{
+		// Erase previous line. NOTE: using XOR line
+		if (shape == Line || shape == Poly) {
+			DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+		}
+		if (shape == Circle) {
+			CircleBresenham(p0_x, p0_y, r);
+		}
+	
+		p1_x = mouse_x;
+		p1_y = mouse_y;
+	
+		// Draw new line
+		if (shape == Line || shape == Poly) {
+			DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+		}
+		if (shape == Circle) {
+			r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
+			CircleBresenham(p0_x, p0_y, r);
+		}
+	
+		x_1 = p0_x;
+		y_1 = p0_y;
+		x_2 = p1_x;
+		y_2 = p1_y;
+	}
 }
 
 void MouseMovePick() {
@@ -1154,21 +1189,25 @@ void MouseMoveZoom() {
 }
 
 void MouseUpDraw() {
-	//			if (shape == Line) {
-	//				DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-	//				DrawLine(p0_x, p0_y, p1_x, p1_y);
-	//				p0_x = p1_x = mouse_x;
-	//				p0_y = p1_y = mouse_y;
-	//
-	//				if (polygon.n > 0 &&
-	//					(polygon.vertex[polygon.n - 1].x != p0_x
-	//					|| polygon.vertex[polygon.n - 1].y != p0_y))
-	//					InsertVertex(polygon, p0_x, p0_y);
-	//			}
-	//			if (shape == Circle) {
-	//				DrawCircle(p0_x, p0_y, r);
-	//			}
-	//			mouse_action = NO_ACTION;
+		if (shape == Line || shape == Poly) {
+			DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+			DrawLine(p0_x, p0_y, p1_x, p1_y);
+			p0_x = p1_x = mouse_x;
+			p0_y = p1_y = mouse_y;
+			if (shape == Poly) {
+				if (polygon.n > 0 &&
+					(polygon.vertex[polygon.n - 1].x != p0_x
+					|| polygon.vertex[polygon.n - 1].y != p0_y))
+					InsertVertex(polygon, p0_x, p0_y);
+			}
+			else if (shape == Line) {
+
+			}
+		}
+		if (shape == Circle) {
+			DrawCircle(p0_x, p0_y, r);
+		}
+		mouse_action = NO_ACTION;
 }
 
 void MouseUpPick() {
@@ -1217,18 +1256,15 @@ void main()
 		SetGraphicsColor(color, 1);
 
 		InitGraf();
-	
-	//	int p0_x, p0_y, p1_x, p1_y, x_1, y_1, x_2, y_2;
-	//	int r = 0;
+
 		int menu_it = 0;
-	//	polygon_type polygon;
-	//	polygon.n = 0;
-	//
+		polygon.n = 0;
+	
 		InitGraphics();
 	
 		menu_item = 0;
 		CheckMenuItem(menu_action, 1, MF_CHECKED);
-		CheckMenuItem(menu_draw, 21, MF_CHECKED);
+		CheckMenuItem(menu_draw, 20, MF_CHECKED);
 	
 		while (key_input != ESC)						// ESC exits the program
 		{
@@ -1237,13 +1273,23 @@ void main()
 			if (menu_it != menu_item)
 			{
 						switch (menu_item){
-						case 21:
+						case 20:
+							CheckMenuItem(menu_draw, 20, MF_CHECKED);
+							CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
 							CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
-							CheckMenuItem(menu_draw, 21, MF_CHECKED);
 							menu_it = menu_item;
 							shape = Line;
 							break;
+						case 21:
+							CheckMenuItem(menu_draw, 20, MF_UNCHECKED);
+							CheckMenuItem(menu_draw, 21, MF_CHECKED);
+							CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
+							
+							menu_it = menu_item;
+							shape = Poly;
+							break;
 						case 22:
+							CheckMenuItem(menu_draw, 20, MF_UNCHECKED);
 							CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
 							CheckMenuItem(menu_draw, 22, MF_CHECKED);
 							menu_it = menu_item;
