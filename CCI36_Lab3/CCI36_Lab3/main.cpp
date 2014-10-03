@@ -143,15 +143,18 @@ void DrawPixel(int x, int y)
 
 wchar_t wind_class[] = L"Window Application";
 
-HMENU menu, menu_draw;//, menu_color, menu_pattern, menu_algorithm;
+HMENU menu, menu_draw, menu_action;
 
 void MenuBar()
 {
 
 	menu = CreateMenu();
 	menu_draw = CreatePopupMenu();
-	//menu_color = CreatePopupMenu();
+	menu_action = CreatePopupMenu();
 
+	
+	AppendMenu(menu, MF_POPUP, (UINT)menu_action, (LPCTSTR)L"&Action");
+	
 	AppendMenu(
 		menu,					// handle to menu to be changed
 		MF_POPUP,				// menu-item flags
@@ -159,32 +162,13 @@ void MenuBar()
 		(LPCTSTR)L"&Draw"		// menu-item content
 		);
 
-	
-		//AppendMenu(menu, MF_POPUP, (UINT)menu_color, (LPCTSTR)L"&Color");
-
-		
 	InsertMenu(menu_draw, 0, MF_STRING, 21, (LPCTSTR)L"&Polygon");
 
 	AppendMenu(menu_draw, MF_STRING, 22, (LPCTSTR)L"&Circle");
 
-	/*InsertMenu(menu_color, 0, MF_STRING, 1, (LPCTSTR)L"Black");
-	AppendMenu(menu_color, MF_STRING, 2, (LPCTSTR)L"Blue");
-	AppendMenu(menu_color, MF_STRING, 3, (LPCTSTR)L"Green");
-	AppendMenu(menu_color, MF_STRING, 4, (LPCTSTR)L"Cyan");
-	AppendMenu(menu_color, MF_STRING, 5, (LPCTSTR)L"Red");
-
-	AppendMenu(menu_color, MF_STRING, 6, (LPCTSTR)L"Magenta");
-	AppendMenu(menu_color, MF_STRING, 7, (LPCTSTR)L"Brown");
-	AppendMenu(menu_color, MF_STRING, 8, (LPCTSTR)L"LightGray");
-	AppendMenu(menu_color, MF_STRING, 9, (LPCTSTR)L"DarkGray");
-
-	AppendMenu(menu_color, MF_STRING, 10, (LPCTSTR)L"LightBlue");
-	AppendMenu(menu_color, MF_STRING, 11, (LPCTSTR)L"LightGreen");
-	AppendMenu(menu_color, MF_STRING, 12, (LPCTSTR)L"LightCyan");
-	AppendMenu(menu_color, MF_STRING, 13, (LPCTSTR)L"LightRed");
-	AppendMenu(menu_color, MF_STRING, 14, (LPCTSTR)L"LightMagenta");
-	AppendMenu(menu_color, MF_STRING, 15, (LPCTSTR)L"Yellow");
-	AppendMenu(menu_color, MF_STRING, 16, (LPCTSTR)L"White");*/
+	InsertMenu(menu_action, 0, MF_STRING, 1, (LPCTSTR)L"Draw");
+	AppendMenu(menu_action, MF_STRING, 2, (LPCTSTR)L"Pick");
+	AppendMenu(menu_action, MF_STRING, 3, (LPCTSTR)L"Zoom");
 }
 
 void InitGraphics()
@@ -1103,6 +1087,128 @@ std::list<Entity*> entities;
 enum Action { Draw, Pick, Zoom };
 enum Shape { Line, Circle, Poly };
 
+void MouseDownDraw() {
+	//			// Pick first point up 
+	//			if (shape == Line){
+	//				if (polygon.n == 0)
+	//				{
+	//					p0_x = p1_x = mouse_x;
+	//					p0_y = p1_y = mouse_y;
+	//					InsertVertex(polygon, p0_x, p0_y);
+	//				}
+	//			}
+	//			if (shape == Circle){
+	//				p0_x = p1_x = mouse_x;
+	//				p0_y = p1_y = mouse_y;
+	//				r = 0;
+	//			}
+}
+
+void MouseDownPick() {
+
+}
+
+void MouseDownZoom() {
+
+}
+
+void MouseMoveDraw() {
+	//			// Example of elastic line
+	//			if (p1_x != mouse_x || p1_y != mouse_y)
+	//			{
+	//				// Erase previous line. NOTE: using XOR line
+	//				if (shape == Line) {
+	//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+	//				}
+	//				if (shape == Circle) {
+	//					CircleBresenham(p0_x, p0_y, r);
+	//				}
+	//
+	//				p1_x = mouse_x;
+	//				p1_y = mouse_y;
+	//
+	//				// Draw new line
+	//				if (shape == Line) {
+	//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+	//				}
+	//				if (shape == Circle) {
+	//					r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
+	//					CircleBresenham(p0_x, p0_y, r);
+	//				}
+	//
+	//				x_1 = p0_x;
+	//				y_1 = p0_y;
+	//				x_2 = p1_x;
+	//				y_2 = p1_y;
+	//			}
+}
+
+void MouseMovePick() {
+
+}
+
+void MouseMoveZoom() {
+
+}
+
+void MouseUpDraw() {
+	//			if (shape == Line) {
+	//				DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+	//				DrawLine(p0_x, p0_y, p1_x, p1_y);
+	//				p0_x = p1_x = mouse_x;
+	//				p0_y = p1_y = mouse_y;
+	//
+	//				if (polygon.n > 0 &&
+	//					(polygon.vertex[polygon.n - 1].x != p0_x
+	//					|| polygon.vertex[polygon.n - 1].y != p0_y))
+	//					InsertVertex(polygon, p0_x, p0_y);
+	//			}
+	//			if (shape == Circle) {
+	//				DrawCircle(p0_x, p0_y, r);
+	//			}
+	//			mouse_action = NO_ACTION;
+}
+
+void MouseUpPick() {
+
+}
+
+void MouseUpZoom() {
+
+}
+
+void RMouseDownDraw() {
+	//			if (shape == Line){
+	//				if (polygon.n != 0){
+	//					DrawPoly(polygon);
+	//					/*if (algorithmType == LINE_SCAN) {
+	//						edge_list_type list;
+	//						FillPolygon(polygon, list);
+	//						}
+	//						else if (algorithmType == FLOOD_FILL_RECURSIVE){
+	//						FloodFillRecursive(polygon);
+	//						}
+	//						else {
+	//						FloodFill(polygon);
+	//						}*/
+	//					polygon.n = 0;
+	//				}
+	//			}
+	//			if (shape == Circle) {
+	//				// FloodFillNotRecCircle(p0_x, p0_y, r);
+	//			}
+	//
+	//			mouse_action = NO_ACTION;
+}
+
+void RMouseDownPick() {
+
+}
+
+void RMouseDownZoom() {
+
+}
+
 void main()
 {
 		Action action = Draw;
@@ -1157,93 +1263,59 @@ void main()
 	
 			if (mouse_action == L_MOUSE_DOWN)
 			{
-	//			// Pick first point up 
-	//			if (shape == Line){
-	//				if (polygon.n == 0)
-	//				{
-	//					p0_x = p1_x = mouse_x;
-	//					p0_y = p1_y = mouse_y;
-	//					InsertVertex(polygon, p0_x, p0_y);
-	//				}
-	//			}
-	//			if (shape == Circle){
-	//				p0_x = p1_x = mouse_x;
-	//				p0_y = p1_y = mouse_y;
-	//				r = 0;
-	//			}
+				switch (action) {
+				case Draw:
+					MouseDownDraw();
+					break;
+				case Pick:
+					MouseDownPick();
+					break;
+				case Zoom:
+					MouseDownZoom();
+					break;
+				}
 			}
 			if (mouse_action == L_MOUSE_MOVE_DOWN)
 			{
-	//			// Example of elastic line
-	//			if (p1_x != mouse_x || p1_y != mouse_y)
-	//			{
-	//				// Erase previous line. NOTE: using XOR line
-	//				if (shape == Line) {
-	//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-	//				}
-	//				if (shape == Circle) {
-	//					CircleBresenham(p0_x, p0_y, r);
-	//				}
-	//
-	//				p1_x = mouse_x;
-	//				p1_y = mouse_y;
-	//
-	//				// Draw new line
-	//				if (shape == Line) {
-	//					DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-	//				}
-	//				if (shape == Circle) {
-	//					r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
-	//					CircleBresenham(p0_x, p0_y, r);
-	//				}
-	//
-	//				x_1 = p0_x;
-	//				y_1 = p0_y;
-	//				x_2 = p1_x;
-	//				y_2 = p1_y;
-	//			}
+				switch (action) {
+				case Draw:
+					MouseMoveDraw();
+					break;
+				case Pick:
+					MouseMovePick();
+					break;
+				case Zoom:
+					MouseMoveZoom();
+					break;
+				}
 			}
 			else  if (mouse_action == L_MOUSE_UP)
 			{
-	//			if (shape == Line) {
-	//				DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-	//				DrawLine(p0_x, p0_y, p1_x, p1_y);
-	//				p0_x = p1_x = mouse_x;
-	//				p0_y = p1_y = mouse_y;
-	//
-	//				if (polygon.n > 0 &&
-	//					(polygon.vertex[polygon.n - 1].x != p0_x
-	//					|| polygon.vertex[polygon.n - 1].y != p0_y))
-	//					InsertVertex(polygon, p0_x, p0_y);
-	//			}
-	//			if (shape == Circle) {
-	//				DrawCircle(p0_x, p0_y, r);
-	//			}
-	//			mouse_action = NO_ACTION;
+				switch (action) {
+				case Draw:
+					MouseUpDraw();
+					break;
+				case Pick:
+					MouseUpPick();
+					break;
+				case Zoom:
+					MouseUpZoom();
+					break;
+				}
 			}
 			else  if (mouse_action == R_MOUSE_DOWN)
 			{
-	//			if (shape == Line){
-	//				if (polygon.n != 0){
-	//					DrawPoly(polygon);
-	//					/*if (algorithmType == LINE_SCAN) {
-	//						edge_list_type list;
-	//						FillPolygon(polygon, list);
-	//						}
-	//						else if (algorithmType == FLOOD_FILL_RECURSIVE){
-	//						FloodFillRecursive(polygon);
-	//						}
-	//						else {
-	//						FloodFill(polygon);
-	//						}*/
-	//					polygon.n = 0;
-	//				}
-	//			}
-	//			if (shape == Circle) {
-	//				// FloodFillNotRecCircle(p0_x, p0_y, r);
-	//			}
-	//
-	//			mouse_action = NO_ACTION;
+				switch (action) {
+				case Draw:
+					RMouseDownDraw();
+					break;
+				case Pick:
+					RMouseDownPick();
+					break;
+				case Zoom:
+					RMouseDownZoom();
+					break;
+				}
 			}
 		}
 	
