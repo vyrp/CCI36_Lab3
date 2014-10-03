@@ -35,6 +35,7 @@ static LRESULT CALLBACK WinProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lPa
 #define R_MOUSE_DOWN 2
 #define L_DOUBLE_CLICK 3
 #define L_MOUSE_UP 4
+#define PICK_DELTA 4
 
 #define CONSOLE_SIZE_X 640				// initial input line size in pixel
 #define START_TEXT_X 5					// input line box initial position X
@@ -1127,7 +1128,7 @@ void PickEntity(int x, int y)
 	float xf, yf, dxf, dyf;
 	DeviceToNormalized(x, y, &xf, &yf);
 	InverseViewingTransformation(&xf, &yf);
-	DeviceToNormalized(2, 2, &dxf, &dyf);
+	DeviceToNormalized(PICK_DELTA, numYpixels - PICK_DELTA, &dxf, &dyf);
 	InverseViewingTransformation(&dxf, &dyf);
 
 	if (selected_entity != entities.end())
