@@ -648,7 +648,6 @@ void SetWindow(float x1, float x2, float y1, float y2)
 	vwsx = (vxh - vxs) / (wxh - wxs);
 	vwsy = (vyh - vys) / (wyh - wys);
 }
-
 void SetViewport(float x1, float x2, float y1, float y2)
 /* Viewport specification and scale transformation computation */
 {
@@ -665,7 +664,6 @@ void ViewingTransformation(float *x, float *y)
 	*x = (*x - wxs)*vwsx + vxs;
 	*y = (*y - wys)*vwsy + vys;
 }
-
 void NormalizedToDevice(float xn, float yn, int *xd, int *yd)
 /* transformation from normalized point to device coordenate (its rounds the
 float number) */
@@ -673,7 +671,16 @@ float number) */
 	*xd = (int)(x_start + width*xn);
 	*yd = (int)(y_end - (y_start + heigth*yn));
 }
-
+void InverseViewingTransformation(float *x, float *y)
+{
+	*x = (*x - vxs) / vwsx + wxs;
+	*y = (*y - vys) / vwsy + wys;
+}
+void DeviceToNormalized(int xd, int yd, float *xn, float *yn)
+{
+	*xn = ((float)(xd - x_start)) / width;
+	*yn = ((float)(y_end - yd - y_start)) / heigth;
+}
 
 void XYEdgeIntersection(float  *x1, float *x2, float *y1, float *y2, float wy, float *x, float *y)
 {
@@ -779,7 +786,6 @@ bool Clip2D(float *x1, float *y1, float *x2, float *y2)
 	return(true);
 }
 
-
 void DrawLine2D(float x1, float y1, float x2, float y2)
 {
 	int xi1, yi1, xi2, yi2;
@@ -806,7 +812,6 @@ void LineAbs2D(float x, float y)
 	x_current = x;
 	y_current = y;
 }
-
 
 void LineRel2D(float dx, float dy)
 {
@@ -1081,6 +1086,40 @@ public:
 };
 
 std::list<Entity*> entities;
+std::list<Entity*>::iterator selected_entity = entities.end();
+
+void Pick(int x, int y)
+{
+	float xf, yf, dxf, dyf;
+	DeviceToNormalized(x, y, &xf, &yf);
+	InverseViewingTransformation(&xf, &yf);
+	DeviceToNormalized(2, 2, &dxf, &dyf);
+	InverseViewingTransformation(&dxf, &dyf);
+
+	for (std::list<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
+	{
+		if ((*it)->Pick(x, y, sqrt(dxf*dyf)))
+		{
+			if (selected_entity != entities.end())
+			{
+				(*selected_entity)->SetUnactive();
+			}
+			selected_entity = it;
+			(*selected_entity)->SetActive();
+			return;
+		}
+	}
+	selected_entity = entities.end();
+}
+
+void Delete()
+{
+	if (selected_entity != entities.end())
+	{
+		entities.erase(selected_entity);
+		selected_entity = entities.end();
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////
 
