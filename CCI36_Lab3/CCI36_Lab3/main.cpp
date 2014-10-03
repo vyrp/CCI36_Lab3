@@ -152,9 +152,9 @@ void MenuBar()
 	menu_draw = CreatePopupMenu();
 	menu_action = CreatePopupMenu();
 
-	
+
 	AppendMenu(menu, MF_POPUP, (UINT)menu_action, (LPCTSTR)L"&Action");
-	
+
 	AppendMenu(
 		menu,					// handle to menu to be changed
 		MF_POPUP,				// menu-item flags
@@ -656,7 +656,6 @@ void SetWindow(float x1, float x2, float y1, float y2)
 	vwsx = (vxh - vxs) / (wxh - wxs);
 	vwsy = (vyh - vys) / (wyh - wys);
 }
-
 void SetViewport(float x1, float x2, float y1, float y2)
 /* Viewport specification and scale transformation computation */
 {
@@ -673,7 +672,6 @@ void ViewingTransformation(float *x, float *y)
 	*x = (*x - wxs)*vwsx + vxs;
 	*y = (*y - wys)*vwsy + vys;
 }
-
 void NormalizedToDevice(float xn, float yn, int *xd, int *yd)
 /* transformation from normalized point to device coordenate (its rounds the
 float number) */
@@ -683,20 +681,15 @@ float number) */
 }
 
 void InverseViewingTransformation(float *x, float *y)
-/* transformation from object point to normalized point */
 {
-	*x = (*x - vxs)/vwsx + wxs;
-	*y = (*y - vys)/vwsy + wys;
+	*x = (*x - vxs) / vwsx + wxs;
+	*y = (*y - vys) / vwsy + wys;
 }
-
-void DeviceToNormalized(float *xn, float *yn, int xd, int yd)
-/* transformation from normalized point to device coordenate (its rounds the
-float number) */
+void DeviceToNormalized(int xd, int yd, float *xn, float *yn)
 {
-	*xn = (xd - x_start) * 1.0f / width;
-	*yn = ((y_end - yd) - y_start) * 1.0f / heigth;
+	*xn = ((float)(xd - x_start)) / width;
+	*yn = ((float)(y_end - yd - y_start)) / heigth;
 }
-
 
 void XYEdgeIntersection(float  *x1, float *x2, float *y1, float *y2, float wy, float *x, float *y)
 {
@@ -802,7 +795,6 @@ bool Clip2D(float *x1, float *y1, float *x2, float *y2)
 	return(true);
 }
 
-
 void DrawLine2D(float x1, float y1, float x2, float y2)
 {
 	int xi1, yi1, xi2, yi2;
@@ -829,7 +821,6 @@ void LineAbs2D(float x, float y)
 	x_current = x;
 	y_current = y;
 }
-
 
 void LineRel2D(float dx, float dy)
 {
@@ -1104,6 +1095,40 @@ public:
 };
 
 std::list<Entity*> entities;
+std::list<Entity*>::iterator selected_entity = entities.end();
+
+void PickEntity(int x, int y)
+{
+	float xf, yf, dxf, dyf;
+	DeviceToNormalized(x, y, &xf, &yf);
+	InverseViewingTransformation(&xf, &yf);
+	DeviceToNormalized(2, 2, &dxf, &dyf);
+	InverseViewingTransformation(&dxf, &dyf);
+
+	for (std::list<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
+	{
+		if ((*it)->Pick(xf, yf, sqrt(dxf*dyf)))
+		{
+			if (selected_entity != entities.end())
+			{
+				(*selected_entity)->SetUnactive();
+			}
+			selected_entity = it;
+			(*selected_entity)->SetActive();
+			return;
+		}
+	}
+	selected_entity = entities.end();
+}
+
+void DeleteEntity()
+{
+	if (selected_entity != entities.end())
+	{
+		entities.erase(selected_entity);
+		selected_entity = entities.end();
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -1115,7 +1140,7 @@ polygon_type polygon;
 int p0_x, p0_y, p1_x, p1_y, r, x_1, y_1, x_2, y_2;
 
 void GetWorldCoordinates(int xd, int yd, float *x, float* y) {
-	DeviceToNormalized(x, y, xd, yd);
+	DeviceToNormalized(xd, yd, x, y);
 	InverseViewingTransformation(x, y);
 }
 
@@ -1142,7 +1167,7 @@ void MouseDownDraw() {
 }
 
 void MouseDownPick() {
-
+	PickEntity(mouse_x, mouse_y);
 }
 
 void MouseDownZoom() {
@@ -1160,10 +1185,10 @@ void MouseMoveDraw() {
 		if (shape == Circle) {
 			CircleBresenham(p0_x, p0_y, r);
 		}
-	
+
 		p1_x = mouse_x;
 		p1_y = mouse_y;
-	
+
 		// Draw new line
 		if (shape == Line || shape == Poly) {
 			DrawLineXor(p0_x, p0_y, p1_x, p1_y);
@@ -1172,7 +1197,7 @@ void MouseMoveDraw() {
 			r = (int)sqrt((p1_x - p0_x)*(p1_x - p0_x) + (p1_y - p0_y)*(p1_y - p0_y));
 			CircleBresenham(p0_x, p0_y, r);
 		}
-	
+
 		x_1 = p0_x;
 		y_1 = p0_y;
 		x_2 = p1_x;
@@ -1189,25 +1214,25 @@ void MouseMoveZoom() {
 }
 
 void MouseUpDraw() {
-		if (shape == Line || shape == Poly) {
-			DrawLineXor(p0_x, p0_y, p1_x, p1_y);
-			DrawLine(p0_x, p0_y, p1_x, p1_y);
-			p0_x = p1_x = mouse_x;
-			p0_y = p1_y = mouse_y;
-			if (shape == Poly) {
-				if (polygon.n > 0 &&
-					(polygon.vertex[polygon.n - 1].x != p0_x
-					|| polygon.vertex[polygon.n - 1].y != p0_y))
-					InsertVertex(polygon, p0_x, p0_y);
-			}
-			else if (shape == Line) {
+	if (shape == Line || shape == Poly) {
+		DrawLineXor(p0_x, p0_y, p1_x, p1_y);
+		DrawLine(p0_x, p0_y, p1_x, p1_y);
+		p0_x = p1_x = mouse_x;
+		p0_y = p1_y = mouse_y;
+		if (shape == Poly) {
+			if (polygon.n > 0 &&
+				(polygon.vertex[polygon.n - 1].x != p0_x
+				|| polygon.vertex[polygon.n - 1].y != p0_y))
+				InsertVertex(polygon, p0_x, p0_y);
+		}
+		else if (shape == Line) {
 
-			}
 		}
-		if (shape == Circle) {
-			DrawCircle(p0_x, p0_y, r);
-		}
-		mouse_action = NO_ACTION;
+	}
+	if (shape == Circle) {
+		DrawCircle(p0_x, p0_y, r);
+	}
+	mouse_action = NO_ACTION;
 }
 
 void MouseUpPick() {
@@ -1219,31 +1244,17 @@ void MouseUpZoom() {
 }
 
 void RMouseDownDraw() {
-	//			if (shape == Line){
-	//				if (polygon.n != 0){
-	//					DrawPoly(polygon);
-	//					/*if (algorithmType == LINE_SCAN) {
-	//						edge_list_type list;
-	//						FillPolygon(polygon, list);
-	//						}
-	//						else if (algorithmType == FLOOD_FILL_RECURSIVE){
-	//						FloodFillRecursive(polygon);
-	//						}
-	//						else {
-	//						FloodFill(polygon);
-	//						}*/
-	//					polygon.n = 0;
-	//				}
-	//			}
-	//			if (shape == Circle) {
-	//				// FloodFillNotRecCircle(p0_x, p0_y, r);
-	//			}
-	//
-	//			mouse_action = NO_ACTION;
+	if (shape == Poly){
+		if (polygon.n != 0){
+			DrawPoly(polygon);
+			polygon.n = 0;
+		}
+	}
+	mouse_action = NO_ACTION;
 }
 
 void RMouseDownPick() {
-
+	DeleteEntity();
 }
 
 void RMouseDownZoom() {
@@ -1252,129 +1263,131 @@ void RMouseDownZoom() {
 
 void main()
 {
-		Action action = Draw;
-		SetGraphicsColor(color, 1);
+	Action action = Draw;
+	SetGraphicsColor(color, 1);
 
-		InitGraf();
 
-		int menu_it = 0;
-		polygon.n = 0;
-	
-		InitGraphics();
-	
-		menu_item = 0;
-		CheckMenuItem(menu_action, 1, MF_CHECKED);
-		CheckMenuItem(menu_draw, 20, MF_CHECKED);
-	
-		while (key_input != ESC)						// ESC exits the program
+	InitGraf();
+
+	int menu_it = 0;
+	polygon.n = 0;
+
+	InitGraphics();
+
+	menu_item = 0;
+	CheckMenuItem(menu_action, 1, MF_CHECKED);
+	CheckMenuItem(menu_draw, 20, MF_CHECKED);
+
+	while (key_input != ESC)						// ESC exits the program
+	{
+		CheckGraphicsMsg();
+
+		if (menu_it != menu_item)
 		{
-			CheckGraphicsMsg();
+			switch (menu_item){
+			case 20:
+				CheckMenuItem(menu_draw, 20, MF_CHECKED);
+				CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
+				CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
+				menu_it = menu_item;
+				shape = Line;
+				break;
+			case 21:
+				CheckMenuItem(menu_draw, 20, MF_UNCHECKED);
+				CheckMenuItem(menu_draw, 21, MF_CHECKED);
+				CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
 
-			if (menu_it != menu_item)
-			{
-						switch (menu_item){
-						case 20:
-							CheckMenuItem(menu_draw, 20, MF_CHECKED);
-							CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
-							CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
-							menu_it = menu_item;
-							shape = Line;
-							break;
-						case 21:
-							CheckMenuItem(menu_draw, 20, MF_UNCHECKED);
-							CheckMenuItem(menu_draw, 21, MF_CHECKED);
-							CheckMenuItem(menu_draw, 22, MF_UNCHECKED);
-							
-							menu_it = menu_item;
-							shape = Poly;
-							break;
-						case 22:
-							CheckMenuItem(menu_draw, 20, MF_UNCHECKED);
-							CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
-							CheckMenuItem(menu_draw, 22, MF_CHECKED);
-							menu_it = menu_item;
-							shape = Circle;
-							break;
-							default:
-								int i;
-								for (i = 1; i <= 16; i++)
-								CheckMenuItem(menu_action, i, MF_UNCHECKED);
-								CheckMenuItem(menu_action, menu_item, MF_CHECKED);
-								if (menu_item >= 1 && menu_item <= 16){
-									switch (menu_item) {
-									case 1:
-										action = Draw;
-										break;
-									case 2:
-										action = Pick;
-										break;
-									case 3:
-										action = Zoom;
-										break;
-									}
-								}
-								menu_it = menu_item;
+				menu_it = menu_item;
+				shape = Poly;
+				break;
+			case 22:
+				CheckMenuItem(menu_draw, 20, MF_UNCHECKED);
+				CheckMenuItem(menu_draw, 21, MF_UNCHECKED);
+				CheckMenuItem(menu_draw, 22, MF_CHECKED);
+				menu_it = menu_item;
+				shape = Circle;
+				break;
+			default:
+				int i;
+				for (i = 1; i <= 16; i++)
+					CheckMenuItem(menu_action, i, MF_UNCHECKED);
+				CheckMenuItem(menu_action, menu_item, MF_CHECKED);
+				if (menu_item >= 1 && menu_item <= 16){
+					switch (menu_item) {
+					case 1:
+						action = Draw;
+						break;
+					case 2:
+						action = Pick;
+						break;
+					case 3:
+						action = Zoom;
+						break;
 					}
-	
-			}
-	
-			if (mouse_action == L_MOUSE_DOWN)
-			{
-				switch (action) {
-				case Draw:
-					MouseDownDraw();
-					break;
-				case Pick:
-					MouseDownPick();
-					break;
-				case Zoom:
-					MouseDownZoom();
-					break;
 				}
+				menu_it = menu_item;
+
 			}
-			if (mouse_action == L_MOUSE_MOVE_DOWN)
-			{
-				switch (action) {
-				case Draw:
-					MouseMoveDraw();
-					break;
-				case Pick:
-					MouseMovePick();
-					break;
-				case Zoom:
-					MouseMoveZoom();
-					break;
-				}
-			}
-			else  if (mouse_action == L_MOUSE_UP)
-			{
-				switch (action) {
-				case Draw:
-					MouseUpDraw();
-					break;
-				case Pick:
-					MouseUpPick();
-					break;
-				case Zoom:
-					MouseUpZoom();
-					break;
-				}
-			}
-			else  if (mouse_action == R_MOUSE_DOWN)
-			{
-				switch (action) {
-				case Draw:
-					RMouseDownDraw();
-					break;
-				case Pick:
-					RMouseDownPick();
-					break;
-				case Zoom:
-					RMouseDownZoom();
-					break;
-				}
+
+		}
+
+		if (mouse_action == L_MOUSE_DOWN)
+		{
+			switch (action) {
+			case Draw:
+				MouseDownDraw();
+				break;
+			case Pick:
+				MouseDownPick();
+				break;
+			case Zoom:
+				MouseDownZoom();
+				break;
 			}
 		}
-	
-		CloseGraphics();
+		if (mouse_action == L_MOUSE_MOVE_DOWN)
+		{
+			switch (action) {
+			case Draw:
+				MouseMoveDraw();
+				break;
+			case Pick:
+				MouseMovePick();
+				break;
+			case Zoom:
+				MouseMoveZoom();
+				break;
+			}
+		}
+		else  if (mouse_action == L_MOUSE_UP)
+		{
+			switch (action) {
+			case Draw:
+				MouseUpDraw();
+				break;
+			case Pick:
+				MouseUpPick();
+				break;
+			case Zoom:
+				MouseUpZoom();
+				break;
+			}
+		}
+		else  if (mouse_action == R_MOUSE_DOWN)
+		{
+			switch (action) {
+			case Draw:
+				RMouseDownDraw();
+				break;
+			case Pick:
+				RMouseDownPick();
+				break;
+			case Zoom:
+				RMouseDownZoom();
+				break;
+			}
+		}
+	}
+
+	CloseGraphics();
 }
