@@ -1128,8 +1128,10 @@ void PickEntity(int x, int y)
 	float xf, yf, dxf, dyf;
 	DeviceToNormalized(x, y, &xf, &yf);
 	InverseViewingTransformation(&xf, &yf);
-	DeviceToNormalized(PICK_DELTA, numYpixels - PICK_DELTA, &dxf, &dyf);
+	DeviceToNormalized(x + PICK_DELTA, y + PICK_DELTA, &dxf, &dyf);
 	InverseViewingTransformation(&dxf, &dyf);
+	dxf = abs(dxf - xf);
+	dyf = abs(dyf - yf);
 
 	if (selected_entity != entities.end())
 	{
@@ -1373,6 +1375,7 @@ void main()
 						action = Zoom;
 						break;
 					}
+					mouse_action = NO_ACTION;
 				}
 				menu_it = menu_item;
 
