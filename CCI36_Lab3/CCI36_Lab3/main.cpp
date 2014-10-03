@@ -1088,7 +1088,7 @@ public:
 std::list<Entity*> entities;
 std::list<Entity*>::iterator selected_entity = entities.end();
 
-void Pick(int x, int y)
+void PickEntity(int x, int y)
 {
 	float xf, yf, dxf, dyf;
 	DeviceToNormalized(x, y, &xf, &yf);
@@ -1098,7 +1098,7 @@ void Pick(int x, int y)
 
 	for (std::list<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
 	{
-		if ((*it)->Pick(x, y, sqrt(dxf*dyf)))
+		if ((*it)->Pick(xf, yf, sqrt(dxf*dyf)))
 		{
 			if (selected_entity != entities.end())
 			{
