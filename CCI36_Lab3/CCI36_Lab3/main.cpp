@@ -159,7 +159,7 @@ void MenuBar()
 		menu,					// handle to menu to be changed
 		MF_POPUP,				// menu-item flags
 		(UINT)menu_draw,		// menu-item identifier or handle to drop-down menu or submenu
-		(LPCTSTR)L"&Draw"		// menu-item content
+		(LPCTSTR)L"&Shape"		// menu-item content
 		);
 
 	InsertMenu(menu_draw, 0, MF_STRING, 20, (LPCTSTR)L"&Line");
